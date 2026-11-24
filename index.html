@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ECTO-CLAW: Ghost Hunter</title>
+  <title>CLAW CATCHER</title>
+  <link rel="icon" type="image/png" href="https://img.icons8.com/nolan/64/ghost.png" />
   <!-- Load Tailwind CSS for responsive layout & arcade UI chrome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Load Arcade & Monospace Google Fonts -->
@@ -16,10 +17,11 @@
     :root {
       --bg-deep: #090714;
       --cabinet-border: #2a2152;
-      --ecto-cyan: #2ef2b8;
-      --ecto-purple: #c084fc;
-      --ecto-gold: #fbbf24;
-      --ecto-danger: #f43f5e;
+      --neon-cyan: #00f5d4;
+      --neon-green: #39ff14;
+      --neon-purple: #c084fc;
+      --neon-gold: #fbbf24;
+      --neon-crimson: #ff2a6d;
     }
 
     * {
@@ -38,7 +40,6 @@
       background-color: var(--bg-deep);
       font-family: 'Fredoka', sans-serif;
       color: #f8fafc;
-      touch-action: manipulation;
     }
 
     .font-mono-arcade {
@@ -47,47 +48,44 @@
 
     /* Glowing Arcade Text Effects */
     .glow-cyan {
-      text-shadow: 0 0 12px rgba(46, 242, 184, 0.7), 0 0 28px rgba(46, 242, 184, 0.35);
+      text-shadow: 0 0 12px rgba(0, 245, 212, 0.75), 0 0 28px rgba(0, 245, 212, 0.35);
     }
 
     .glow-purple {
       text-shadow: 0 0 12px rgba(192, 132, 252, 0.75), 0 0 26px rgba(168, 85, 247, 0.4);
     }
 
-    .glow-gold {
-      text-shadow: 0 0 12px rgba(251, 191, 36, 0.8), 0 0 24px rgba(245, 158, 11, 0.4);
-    }
-
     /* Tactile 3D Arcade Push Buttons */
     .arcade-btn {
       position: relative;
-      transition: transform 0.07s ease, box-shadow 0.07s ease, filter 0.12s ease;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease, background 0.15s ease, border-color 0.15s ease;
       cursor: pointer;
+      touch-action: manipulation;
     }
 
     .arcade-btn:active,
     .arcade-btn.is-pressed {
-      transform: translateY(4px);
+      transform: translateY(3px);
     }
 
     .btn-cyan {
-      background: linear-gradient(180deg, #34f5c5 0%, #0d9488 100%);
-      box-shadow: 0 5px 0 #064e3b, 0 8px 18px rgba(46, 242, 184, 0.35);
+      background: linear-gradient(180deg, #00f5d4 0%, #0d9488 100%);
+      box-shadow: 0 5px 0 #064e3b, 0 8px 18px rgba(0, 245, 212, 0.35);
       color: #042f2e;
     }
     .btn-cyan:active,
     .btn-cyan.is-pressed {
-      box-shadow: 0 1px 0 #064e3b, 0 3px 10px rgba(46, 242, 184, 0.35);
+      box-shadow: 0 1px 0 #064e3b, 0 3px 10px rgba(0, 245, 212, 0.35);
     }
 
     .btn-drop {
-      background: linear-gradient(180deg, #f43f5e 0%, #be123c 100%);
-      box-shadow: 0 6px 0 #881337, 0 10px 24px rgba(244, 63, 94, 0.45);
+      background: linear-gradient(180deg, #ff2a6d 0%, #be123c 100%);
+      box-shadow: 0 6px 0 #881337, 0 10px 24px rgba(255, 42, 109, 0.45);
       color: #ffffff;
     }
     .btn-drop:active,
     .btn-drop.is-pressed {
-      box-shadow: 0 1px 0 #881337, 0 4px 12px rgba(244, 63, 94, 0.45);
+      box-shadow: 0 1px 0 #881337, 0 4px 12px rgba(255, 42, 109, 0.45);
     }
     .btn-drop:disabled {
       opacity: 0.55;
@@ -106,17 +104,54 @@
       box-shadow: 0 1px 0 #3b0764, 0 3px 10px rgba(168, 85, 247, 0.4);
     }
 
+    /* Difficulty Selector Button States (Explicit pointer-events & stacking) */
+    .diff-btn {
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      position: relative;
+      z-index: 110;
+      touch-action: manipulation;
+    }
+
+    .diff-easy-active {
+      background: linear-gradient(180deg, rgba(57, 255, 20, 0.28) 0%, rgba(21, 128, 61, 0.45) 100%);
+      border-color: #39ff14 !important;
+      color: #ffffff;
+      box-shadow: 0 0 18px rgba(57, 255, 20, 0.45), inset 0 0 12px rgba(57, 255, 20, 0.25);
+    }
+
+    .diff-medium-active {
+      background: linear-gradient(180deg, rgba(0, 245, 212, 0.28) 0%, rgba(13, 148, 136, 0.45) 100%);
+      border-color: #00f5d4 !important;
+      color: #ffffff;
+      box-shadow: 0 0 18px rgba(0, 245, 212, 0.45), inset 0 0 12px rgba(0, 245, 212, 0.25);
+    }
+
+    .diff-hard-active {
+      background: linear-gradient(180deg, rgba(255, 42, 109, 0.32) 0%, rgba(159, 18, 57, 0.5) 100%);
+      border-color: #ff2a6d !important;
+      color: #ffffff;
+      box-shadow: 0 0 18px rgba(255, 42, 109, 0.5), inset 0 0 12px rgba(255, 42, 109, 0.25);
+    }
+
+    /* Modal Screens must sit cleanly above canvas & scanlines */
+    #start-screen,
+    #gameover-screen {
+      z-index: 100;
+      pointer-events: auto;
+    }
+
     /* Subtle Arcade Cabinet Scanline Overlay */
     .scanlines {
       background: linear-gradient(
         rgba(18, 16, 16, 0) 50%,
-        rgba(0, 0, 0, 0.22) 50%
+        rgba(0, 0, 0, 0.2) 50%
       );
       background-size: 100% 4px;
       pointer-events: none;
+      z-index: 15;
     }
 
-    /* Custom Scrollbar for Field Guide on tiny viewports */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -127,7 +162,7 @@
 
     @keyframes floatSlow {
       0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-5px); }
+      50% { transform: translateY(-4px); }
     }
     .animate-float {
       animation: floatSlow 2.6s ease-in-out infinite;
@@ -141,19 +176,20 @@
 
     <!-- ==================== TOP HUD BAR ==================== -->
     <header class="z-20 flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-[#171136] via-[#1f1747] to-[#171136] border-b-2 border-[#322666] shrink-0">
-      
-      <!-- Brand + Score + Combo -->
+
+      <!-- Brand + Difficulty Badge + Score -->
       <div class="flex items-center gap-2.5 sm:gap-4">
-        <div class="hidden md:flex items-center gap-2 pr-3 border-r border-[#35296b]">
-          <span class="inline-block w-3 h-3 rounded-full bg-[#2ef2b8] shadow-[0_0_10px_#2ef2b8] animate-pulse"></span>
-          <span class="text-sm font-bold tracking-wider text-purple-200">ECTO-CLAW</span>
+        <div class="flex items-center gap-2 pr-2 sm:pr-3 border-r border-[#35296b]">
+          <span class="hidden md:inline-block w-2.5 h-2.5 rounded-full bg-[#00f5d4] shadow-[0_0_10px_#00f5d4] animate-pulse"></span>
+          <span class="hidden md:inline text-sm font-extrabold tracking-wider text-purple-100">CLAW CATCHER</span>
+          <span id="hud-diff-badge" class="font-mono-arcade text-[10px] sm:text-xs font-extrabold px-2 py-0.5 rounded-md border bg-[#00f5d4]/15 text-[#00f5d4] border-[#00f5d4]/60 shadow-[0_0_10px_rgba(0,245,212,0.28)]">MEDIUM</span>
         </div>
 
         <!-- Score Display -->
         <div class="flex flex-col">
           <span class="text-[10px] sm:text-xs uppercase tracking-widest text-purple-300/80 font-semibold">Score</span>
           <div class="flex items-baseline gap-1.5">
-            <span id="hud-score" class="font-mono-arcade text-lg sm:text-2xl font-extrabold text-[#2ef2b8] glow-cyan leading-none">0</span>
+            <span id="hud-score" class="font-mono-arcade text-lg sm:text-2xl font-extrabold text-[#00f5d4] glow-cyan leading-none">0</span>
             <span id="hud-combo" class="hidden font-mono-arcade text-xs sm:text-sm font-bold px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40">2x</span>
           </div>
         </div>
@@ -165,7 +201,7 @@
         <div class="flex flex-col min-w-[96px] sm:min-w-[130px]">
           <div class="flex items-center justify-between text-[10px] sm:text-xs font-semibold text-cyan-200 mb-0.5">
             <span>JAR #<span id="hud-jar-num">1</span></span>
-            <span class="font-mono-arcade text-[#2ef2b8]"><span id="hud-jar-count">0</span>/<span id="hud-jar-cap">4</span></span>
+            <span class="font-mono-arcade text-[#00f5d4]"><span id="hud-jar-count">0</span>/<span id="hud-jar-cap">4</span></span>
           </div>
           <div class="w-full h-2.5 sm:h-3 rounded-full bg-[#090714] border border-cyan-500/40 p-0.5 overflow-hidden">
             <div id="hud-jar-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-300 transition-all duration-300" style="width: 0%"></div>
@@ -188,68 +224,110 @@
       <div class="flex items-center gap-2 sm:gap-3">
         <div class="flex flex-col min-w-[84px] sm:min-w-[115px]">
           <div class="flex items-center justify-between text-[10px] sm:text-xs font-semibold mb-0.5">
-            <span class="text-purple-200">TIME</span>
-            <span id="hud-time-text" class="font-mono-arcade font-bold text-white">60s</span>
+            <span class="text-purple-300 uppercase">Time</span>
+            <span id="hud-time-text" class="font-mono-arcade font-extrabold text-white">60s</span>
           </div>
           <div class="w-full h-2.5 sm:h-3 rounded-full bg-[#090714] border border-purple-500/40 p-0.5 overflow-hidden">
             <div id="hud-time-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 transition-all duration-150" style="width: 100%"></div>
           </div>
         </div>
 
-        <!-- Sound Mute/Unmute Toggle -->
+        <!-- Audio Mute Toggle -->
         <button id="btn-mute" type="button" aria-label="Toggle Sound" title="Toggle Sound"
-          class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#23194d] hover:bg-[#2f2266] border border-purple-400/30 text-cyan-300 transition active:scale-95">
-          <!-- Sound On Icon -->
-          <svg id="icon-sound-on" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" stroke-linecap="round" stroke-linejoin="round"/>
+          class="p-2 sm:p-2.5 rounded-xl bg-[#130e2e] hover:bg-[#1e1647] border border-purple-500/40 text-purple-200 transition active:scale-95 cursor-pointer">
+          <svg id="icon-sound-on" class="w-4 h-4 sm:w-5 sm:h-5 text-[#00f5d4]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <!-- Sound Off Icon -->
-          <svg id="icon-sound-off" class="w-5 h-5 hidden text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="23" y1="9" x2="17" y2="15" stroke-linecap="round"/>
-            <line x1="17" y1="9" x2="23" y2="15" stroke-linecap="round"/>
+          <svg id="icon-sound-off" class="hidden w-4 h-4 sm:w-5 sm:h-5 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
     </header>
 
-    <!-- ==================== PLAYFIELD CANVAS AREA ==================== -->
-    <main id="canvas-container" class="relative flex-1 w-full min-h-0 overflow-hidden bg-[#0b081b]">
+    <!-- ==================== MAIN PLAYFIELD CANVAS AREA ==================== -->
+    <main id="canvas-container" class="relative flex-1 w-full min-h-0 overflow-hidden">
       <canvas id="game-canvas" class="block w-full h-full"></canvas>
-
-      <!-- Subtle CRT Scanline Layer -->
-      <div class="scanlines absolute inset-0 z-10"></div>
+      <div class="scanlines absolute inset-0"></div>
 
       <!-- ==================== START SCREEN OVERLAY ==================== -->
-      <div id="overlay-start" class="absolute inset-0 z-30 flex items-center justify-center p-3 sm:p-6 bg-[#090714]/80 backdrop-blur-sm overflow-y-auto no-scrollbar">
-        <div class="w-full max-w-xl rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#1a133d] to-[#110c29] border-2 border-[#43338a] p-4 sm:p-6 shadow-[0_0_40px_rgba(46,242,184,0.2)] text-center my-auto">
-          
-          <!-- Badge -->
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/30 text-[#2ef2b8] text-xs font-bold tracking-wider uppercase mb-2">
-            <span class="w-2 h-2 rounded-full bg-[#2ef2b8] animate-ping"></span>
-            Paranormal Containment Unit
-          </div>
+      <div id="start-screen" class="absolute inset-0 flex items-center justify-center p-2.5 sm:p-5 bg-[#090714]/82 backdrop-blur-md overflow-y-auto no-scrollbar">
+        <div class="w-full max-w-xl my-auto rounded-3xl bg-gradient-to-b from-[#1a133d]/95 to-[#0f0b24]/95 border-2 border-[#43338a] p-4 sm:p-6 shadow-[0_0_45px_rgba(0,245,212,0.2)] text-center">
 
-          <!-- Title -->
-          <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-white glow-cyan mb-1">
-            ECTO-CLAW
+          <!-- Title Logo -->
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00f5d4]/10 border border-[#00f5d4]/30 text-[#00f5d4] text-[11px] sm:text-xs font-bold tracking-widest uppercase mb-1.5">
+            <span>Containment Lab #09</span>
+          </div>
+          <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white glow-cyan leading-none">
+            CLAW <span class="text-[#00f5d4]">CATCHER</span>
           </h1>
-          <p class="text-sm sm:text-base font-semibold tracking-widest uppercase text-purple-300 glow-purple mb-4">
-            Ghost Hunter Arcade
+          <p class="text-xs sm:text-sm font-bold tracking-[0.25em] uppercase text-purple-300 glow-purple mt-1 mb-3.5">
+            GHOST HUNTER
           </p>
 
-          <!-- Ghost Field Guide Grid -->
-          <div class="text-left mb-4">
-            <div class="text-xs font-bold uppercase tracking-wider text-purple-300/90 mb-2 flex items-center justify-between">
-              <span>Ghost Field Guide</span>
-              <span class="text-[11px] font-normal text-cyan-300">Consecutive catches boost Combo!</span>
+          <!-- Difficulty / Level Selector -->
+          <div class="mb-3.5 text-left">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-purple-200 mb-1.5 flex items-center justify-between">
+              <span>Select Difficulty Level</span>
+              <span class="text-[10px] font-mono-arcade text-slate-400">Keys: 1 · 2 · 3</span>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
+            <div class="grid grid-cols-3 gap-2 mb-2">
+              <button type="button" data-level="easy"
+                class="diff-btn arcade-btn py-2 px-2 rounded-xl border-2 border-emerald-500/35 bg-[#0c091f] text-emerald-300 flex flex-col items-center justify-center gap-0.5">
+                <span class="text-xs sm:text-sm font-extrabold tracking-wider uppercase">EASY</span>
+                <span data-selected-badge class="hidden text-[9px] font-mono-arcade font-extrabold px-1.5 py-0.2 rounded bg-[#39ff14] text-[#052e16]">SELECTED</span>
+              </button>
+
+              <button type="button" data-level="medium"
+                class="diff-btn arcade-btn py-2 px-2 rounded-xl border-2 border-cyan-500/35 bg-[#0c091f] text-cyan-300 flex flex-col items-center justify-center gap-0.5">
+                <span class="text-xs sm:text-sm font-extrabold tracking-wider uppercase">MEDIUM</span>
+                <span data-selected-badge class="hidden text-[9px] font-mono-arcade font-extrabold px-1.5 py-0.2 rounded bg-[#00f5d4] text-[#042f2e]">SELECTED</span>
+              </button>
+
+              <button type="button" data-level="hard"
+                class="diff-btn arcade-btn py-2 px-2 rounded-xl border-2 border-rose-500/35 bg-[#0c091f] text-rose-300 flex flex-col items-center justify-center gap-0.5">
+                <span class="text-xs sm:text-sm font-extrabold tracking-wider uppercase">HARD</span>
+                <span data-selected-badge class="hidden text-[9px] font-mono-arcade font-extrabold px-1.5 py-0.2 rounded bg-[#ff2a6d] text-white">SELECTED</span>
+              </button>
+            </div>
+
+            <!-- Live Level Preview Card -->
+            <div id="start-preview-card" class="grid grid-cols-5 gap-1.5 p-2 rounded-xl bg-[#0a0718]/95 border border-[#00f5d4]/45 text-center transition-colors">
+              <div>
+                <div class="text-[9px] uppercase text-slate-400">Time</div>
+                <div id="prev-time" class="font-mono-arcade text-xs sm:text-sm font-bold text-white">60s</div>
+              </div>
+              <div>
+                <div class="text-[9px] uppercase text-slate-400">Quota</div>
+                <div id="prev-quota" class="font-mono-arcade text-xs sm:text-sm font-bold text-purple-300">4</div>
+              </div>
+              <div>
+                <div class="text-[9px] uppercase text-slate-400">Speed</div>
+                <div id="prev-speed" class="font-mono-arcade text-xs sm:text-sm font-bold text-[#00f5d4]">1.0x</div>
+              </div>
+              <div>
+                <div class="text-[9px] uppercase text-slate-400">Score</div>
+                <div id="prev-mult" class="font-mono-arcade text-xs sm:text-sm font-bold text-amber-300">1.5x</div>
+              </div>
+              <div>
+                <div class="text-[9px] uppercase text-slate-400">Best</div>
+                <div id="prev-best" class="font-mono-arcade text-xs sm:text-sm font-bold text-[#39ff14]">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ghost Field Guide Grid -->
+          <div class="text-left mb-3.5">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-purple-300/90 mb-1.5 flex items-center justify-between">
+              <span>Ghost Field Guide</span>
+              <span class="text-[10px] font-normal text-cyan-300">Consecutive catches boost Combo!</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
               <!-- Lumina Wisp -->
-              <div class="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl bg-[#0c091f]/90 border border-emerald-400/30">
-                <svg class="w-9 h-9 shrink-0 animate-float" viewBox="0 0 48 48">
+              <div class="flex items-center gap-2 p-2 rounded-xl bg-[#0c091f]/90 border border-emerald-400/30">
+                <svg class="w-8 h-8 shrink-0 animate-float" viewBox="0 0 48 48">
                   <defs>
                     <radialGradient id="gWisp" cx="40%" cy="35%" r="60%">
                       <stop offset="0%" stop-color="#a7f3d0"/>
@@ -265,15 +343,15 @@
                   <ellipse cx="24" cy="25.5" rx="2.2" ry="1.5" fill="#064e3b"/>
                 </svg>
                 <div class="min-w-0">
-                  <div class="text-xs sm:text-sm font-bold text-[#2ef2b8] truncate">Lumina Wisp</div>
-                  <div class="font-mono-arcade text-[11px] text-emerald-200">+100 PTS · +2s</div>
+                  <div class="text-xs font-bold text-[#2ef2b8] truncate">Lumina Wisp</div>
+                  <div class="font-mono-arcade text-[10px] text-emerald-200">+100 PTS · +2s</div>
                   <div class="text-[10px] text-slate-400 truncate">Gentle float</div>
                 </div>
               </div>
 
               <!-- Polter-Dash -->
-              <div class="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl bg-[#0c091f]/90 border border-fuchsia-400/30">
-                <svg class="w-9 h-9 shrink-0 animate-float" style="animation-delay: 0.3s" viewBox="0 0 48 48">
+              <div class="flex items-center gap-2 p-2 rounded-xl bg-[#0c091f]/90 border border-fuchsia-400/30">
+                <svg class="w-8 h-8 shrink-0 animate-float" style="animation-delay: 0.3s" viewBox="0 0 48 48">
                   <defs>
                     <radialGradient id="gPolter" cx="40%" cy="35%" r="60%">
                       <stop offset="0%" stop-color="#f5d0fe"/>
@@ -289,15 +367,15 @@
                   <path d="M20 28q4 3 8 0" stroke="#2e073f" stroke-width="2" fill="none" stroke-linecap="round"/>
                 </svg>
                 <div class="min-w-0">
-                  <div class="text-xs sm:text-sm font-bold text-fuchsia-300 truncate">Polter-Dash</div>
-                  <div class="font-mono-arcade text-[11px] text-fuchsia-200">+250 PTS · +3s</div>
+                  <div class="text-xs font-bold text-fuchsia-300 truncate">Polter-Dash</div>
+                  <div class="font-mono-arcade text-[10px] text-fuchsia-200">+250 PTS · +3s</div>
                   <div class="text-[10px] text-slate-400 truncate">Quick dash bursts</div>
                 </div>
               </div>
 
               <!-- Golden Phantom -->
-              <div class="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl bg-[#0c091f]/90 border border-amber-400/35">
-                <svg class="w-9 h-9 shrink-0 animate-float" style="animation-delay: 0.6s" viewBox="0 0 48 48">
+              <div class="flex items-center gap-2 p-2 rounded-xl bg-[#0c091f]/90 border border-amber-400/35">
+                <svg class="w-8 h-8 shrink-0 animate-float" style="animation-delay: 0.6s" viewBox="0 0 48 48">
                   <defs>
                     <radialGradient id="gGold" cx="40%" cy="35%" r="60%">
                       <stop offset="0%" stop-color="#fef08a"/>
@@ -312,15 +390,15 @@
                   <circle cx="24" cy="28" r="2" fill="#451a03"/>
                 </svg>
                 <div class="min-w-0">
-                  <div class="text-xs sm:text-sm font-bold text-amber-300 truncate">Golden Phantom</div>
-                  <div class="font-mono-arcade text-[11px] text-amber-200">+500 PTS · +5s</div>
+                  <div class="text-xs font-bold text-amber-300 truncate">Golden Phantom</div>
+                  <div class="font-mono-arcade text-[10px] text-amber-200">+500 PTS · +5s</div>
                   <div class="text-[10px] text-slate-400 truncate">Phases invisible!</div>
                 </div>
               </div>
 
               <!-- Cursed Skull -->
-              <div class="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl bg-[#0c091f]/90 border border-rose-500/40">
-                <svg class="w-9 h-9 shrink-0 animate-float" style="animation-delay: 0.9s" viewBox="0 0 48 48">
+              <div class="flex items-center gap-2 p-2 rounded-xl bg-[#0c091f]/90 border border-rose-500/40">
+                <svg class="w-8 h-8 shrink-0 animate-float" style="animation-delay: 0.9s" viewBox="0 0 48 48">
                   <circle cx="24" cy="24" r="16" fill="#be123c" opacity="0.25"/>
                   <path d="M24 9c-8 0-13 5-13 12 0 4 2 7 5 9v5a2 2 0 002 2h12a2 2 0 002-2v-5c3-2 5-5 5-9 0-7-5-12-13-12z" fill="#e2e8f0"/>
                   <circle cx="19" cy="21" r="3.2" fill="#be123c"/>
@@ -328,8 +406,8 @@
                   <path d="M20 32v4M24 32v4M28 32v4" stroke="#1e1b4b" stroke-width="2" stroke-linecap="round"/>
                 </svg>
                 <div class="min-w-0">
-                  <div class="text-xs sm:text-sm font-bold text-rose-400 truncate">Cursed Skull</div>
-                  <div class="font-mono-arcade text-[11px] text-rose-300">-5s · STUNS CLAW</div>
+                  <div class="text-xs font-bold text-rose-400 truncate">Cursed Skull</div>
+                  <div class="font-mono-arcade text-[10px] text-rose-300">TIME PENALTY · STUN</div>
                   <div class="text-[10px] text-slate-400 truncate">Avoid grabbing!</div>
                 </div>
               </div>
@@ -337,10 +415,12 @@
           </div>
 
           <!-- Controls Hint Pill -->
-          <div class="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-xs text-purple-200/90 bg-[#0c091f] border border-purple-500/25 rounded-xl px-3 py-2 mb-4">
+          <div class="flex flex-wrap items-center justify-center gap-2 text-[11px] text-purple-200/90 bg-[#0c091f] border border-purple-500/25 rounded-xl px-3 py-1.5 mb-3.5">
             <span>Move: <strong class="text-cyan-300">◄ / ►</strong> or <strong class="text-cyan-300">A / D</strong></span>
             <span class="text-purple-500">•</span>
-            <span>Drop Claw: <strong class="text-rose-400">SPACE / ▼ / S</strong> or Buttons</span>
+            <span>Drop: <strong class="text-rose-400">SPACE / ▼ / S</strong></span>
+            <span class="text-purple-500">•</span>
+            <span>Start: <strong class="text-emerald-300">ENTER</strong></span>
           </div>
 
           <!-- Start CTA Button -->
@@ -352,34 +432,86 @@
       </div>
 
       <!-- ==================== GAME OVER OVERLAY ==================== -->
-      <div id="overlay-gameover" class="hidden absolute inset-0 z-30 flex items-center justify-center p-4 bg-[#090714]/85 backdrop-blur-md">
-        <div class="w-full max-w-md rounded-3xl bg-gradient-to-b from-[#1d1442] to-[#100b26] border-2 border-[#4c3999] p-6 shadow-[0_0_50px_rgba(192,132,252,0.28)] text-center">
-          <div class="inline-block px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-bold uppercase tracking-widest mb-2">
-            Shift Complete
+      <div id="gameover-screen" class="hidden absolute inset-0 flex items-center justify-center p-3 sm:p-4 bg-[#090714]/86 backdrop-blur-md overflow-y-auto no-scrollbar">
+        <div class="w-full max-w-md my-auto rounded-3xl bg-gradient-to-b from-[#1d1442] to-[#100b26] border-2 border-[#4c3999] p-5 sm:p-6 shadow-[0_0_50px_rgba(192,132,252,0.28)] text-center">
+          <div class="inline-block px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-bold uppercase tracking-widest mb-1.5">
+            CLAW CATCHER · Shift Complete
           </div>
           <h2 class="text-3xl sm:text-4xl font-extrabold text-white glow-purple mb-1">TIME'S UP!</h2>
-          <p id="gameover-subtitle" class="text-xs sm:text-sm text-purple-300 mb-5">Great containment work, Ghost Hunter!</p>
+          <p class="text-xs sm:text-sm text-purple-300 mb-4">Great containment work, Ghost Hunter!</p>
 
           <!-- Final Score Box -->
-          <div class="rounded-2xl bg-[#0a0718] border border-cyan-400/35 p-4 mb-4">
+          <div class="rounded-2xl bg-[#0a0718] border border-cyan-400/35 p-3.5 mb-3.5">
             <div class="text-xs uppercase tracking-widest text-cyan-300/80 font-semibold">Final Score</div>
-            <div id="final-score" class="font-mono-arcade text-4xl sm:text-5xl font-extrabold text-[#2ef2b8] glow-cyan my-1">0</div>
-            <div id="final-best" class="font-mono-arcade text-xs text-amber-300">BEST: 0</div>
+            <div id="final-score" class="font-mono-arcade text-4xl sm:text-5xl font-extrabold text-[#00f5d4] glow-cyan my-1">0</div>
+            <div id="final-best" class="font-mono-arcade text-xs text-amber-300">MEDIUM BEST: 0</div>
           </div>
 
           <!-- Stats Grid -->
-          <div class="grid grid-cols-3 gap-2.5 mb-6">
-            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2.5">
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2">
               <div class="text-[10px] uppercase text-purple-300">Ghosts</div>
-              <div id="final-ghosts" class="font-mono-arcade text-xl font-bold text-white">0</div>
+              <div id="final-ghosts" class="font-mono-arcade text-lg sm:text-xl font-bold text-white">0</div>
             </div>
-            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2.5">
+            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2">
               <div class="text-[10px] uppercase text-purple-300">Jars Sealed</div>
-              <div id="final-jars" class="font-mono-arcade text-xl font-bold text-cyan-300">0</div>
+              <div id="final-jars" class="font-mono-arcade text-lg sm:text-xl font-bold text-cyan-300">0</div>
             </div>
-            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2.5">
+            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2">
               <div class="text-[10px] uppercase text-purple-300">Max Combo</div>
-              <div id="final-combo" class="font-mono-arcade text-xl font-bold text-amber-300">1x</div>
+              <div id="final-combo" class="font-mono-arcade text-lg sm:text-xl font-bold text-amber-300">1x</div>
+            </div>
+          </div>
+
+          <!-- Difficulty Switcher on Game Over -->
+          <div class="mb-4 text-left">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-purple-300/90 mb-1.5 flex items-center justify-between">
+              <span>Select Difficulty Level</span>
+              <span class="font-mono-arcade text-slate-400">1 · 2 · 3</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 mb-2">
+              <button type="button" data-level="easy"
+                class="diff-btn arcade-btn py-1.5 px-2 rounded-xl border-2 border-emerald-500/35 bg-[#0c091f] text-emerald-300 flex flex-col items-center justify-center gap-0.5">
+                <span class="text-xs font-extrabold tracking-wider uppercase">EASY</span>
+                <span data-selected-badge class="hidden text-[8px] font-mono-arcade font-extrabold px-1.5 rounded bg-[#39ff14] text-[#052e16]">SELECTED</span>
+              </button>
+
+              <button type="button" data-level="medium"
+                class="diff-btn arcade-btn py-1.5 px-2 rounded-xl border-2 border-cyan-500/35 bg-[#0c091f] text-cyan-300 flex flex-col items-center justify-center gap-0.5">
+                <span class="text-xs font-extrabold tracking-wider uppercase">MEDIUM</span>
+                <span data-selected-badge class="hidden text-[8px] font-mono-arcade font-extrabold px-1.5 rounded bg-[#00f5d4] text-[#042f2e]">SELECTED</span>
+              </button>
+
+              <button type="button" data-level="hard"
+                class="diff-btn arcade-btn py-1.5 px-2 rounded-xl border-2 border-rose-500/35 bg-[#0c091f] text-rose-300 flex flex-col items-center justify-center gap-0.5">
+                <span class="text-xs font-extrabold tracking-wider uppercase">HARD</span>
+                <span data-selected-badge class="hidden text-[8px] font-mono-arcade font-extrabold px-1.5 rounded bg-[#ff2a6d] text-white">SELECTED</span>
+              </button>
+            </div>
+
+            <!-- Live Level Preview Card on Game Over -->
+            <div id="gameover-preview-card" class="grid grid-cols-5 gap-1 p-1.5 rounded-xl bg-[#0a0718]/95 border border-[#00f5d4]/45 text-center transition-colors">
+              <div>
+                <div class="text-[8px] uppercase text-slate-400">Time</div>
+                <div id="go-prev-time" class="font-mono-arcade text-xs font-bold text-white">60s</div>
+              </div>
+              <div>
+                <div class="text-[8px] uppercase text-slate-400">Quota</div>
+                <div id="go-prev-quota" class="font-mono-arcade text-xs font-bold text-purple-300">4</div>
+              </div>
+              <div>
+                <div class="text-[8px] uppercase text-slate-400">Speed</div>
+                <div id="go-prev-speed" class="font-mono-arcade text-xs font-bold text-[#00f5d4]">1.0x</div>
+              </div>
+              <div>
+                <div class="text-[8px] uppercase text-slate-400">Score</div>
+                <div id="go-prev-mult" class="font-mono-arcade text-xs font-bold text-amber-300">1.5x</div>
+              </div>
+              <div>
+                <div class="text-[8px] uppercase text-slate-400">Best</div>
+                <div id="go-prev-best" class="font-mono-arcade text-xs font-bold text-[#39ff14]">0</div>
+              </div>
             </div>
           </div>
 
@@ -429,7 +561,7 @@
 
       /**
        * =========================================================================
-       * 1. PROCEDURAL WEB AUDIO SYNTHESIZER (Zero External Assets)
+       * 1. PROCEDURAL WEB AUDIO SYNTHESIZER (Zero External Sound URLs)
        * =========================================================================
        */
       class SoundEngine {
@@ -454,6 +586,28 @@
         toggleMute() {
           this.muted = !this.muted;
           return this.muted;
+        }
+
+        // Crisp UI selection chime when picking Easy / Medium / Hard
+        playSelectTone(level = 'medium') {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+          const baseFreq = level === 'easy' ? 523.25 : level === 'hard' ? 783.99 : 659.25;
+
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(baseFreq, now);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.35, now + 0.09);
+
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.14, now + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.13);
         }
 
         // Subtle mechanical stepper pulse while gantry moves
@@ -578,7 +732,7 @@
           if (this.muted || !this.ctx) return;
           const now = this.ctx.currentTime;
 
-          const freqs = [1567.98, 2349.32, 3135.96]; // G6, D7, G7 crystalline glass ping
+          const freqs = [1567.98, 2349.32, 3135.96];
           freqs.forEach((f, idx) => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
@@ -599,7 +753,7 @@
         playJarSealed() {
           if (this.muted || !this.ctx) return;
           const now = this.ctx.currentTime;
-          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          const notes = [523.25, 659.25, 783.99, 1046.50];
 
           notes.forEach((freq, i) => {
             const start = now + i * 0.085;
@@ -683,6 +837,7 @@
 
       const hudScore = document.getElementById('hud-score');
       const hudCombo = document.getElementById('hud-combo');
+      const hudDiffBadge = document.getElementById('hud-diff-badge');
       const hudJarNum = document.getElementById('hud-jar-num');
       const hudJarCount = document.getElementById('hud-jar-count');
       const hudJarCap = document.getElementById('hud-jar-cap');
@@ -691,23 +846,39 @@
       const hudTimeText = document.getElementById('hud-time-text');
       const hudTimeBar = document.getElementById('hud-time-bar');
 
-      const overlayStart = document.getElementById('overlay-start');
-      const overlayGameover = document.getElementById('overlay-gameover');
+      const startScreen = document.getElementById('start-screen');
+      const gameoverScreen = document.getElementById('gameover-screen');
+
+      const diffButtons = document.querySelectorAll('.diff-btn[data-level]');
+      const startPreviewCard = document.getElementById('start-preview-card');
+      const prevTimeEl = document.getElementById('prev-time');
+      const prevQuotaEl = document.getElementById('prev-quota');
+      const prevSpeedEl = document.getElementById('prev-speed');
+      const prevMultEl = document.getElementById('prev-mult');
+      const prevBestEl = document.getElementById('prev-best');
+
+      const gameoverPreviewCard = document.getElementById('gameover-preview-card');
+      const goPrevTimeEl = document.getElementById('go-prev-time');
+      const goPrevQuotaEl = document.getElementById('go-prev-quota');
+      const goPrevSpeedEl = document.getElementById('go-prev-speed');
+      const goPrevMultEl = document.getElementById('go-prev-mult');
+      const goPrevBestEl = document.getElementById('go-prev-best');
+
       const btnStart = document.getElementById('btn-start');
       const btnRestart = document.getElementById('btn-restart');
       const btnMute = document.getElementById('btn-mute');
       const iconSoundOn = document.getElementById('icon-sound-on');
       const iconSoundOff = document.getElementById('icon-sound-off');
 
-      const ctrlLeft = document.getElementById('ctrl-left');
-      const ctrlRight = document.getElementById('ctrl-right');
-      const ctrlDrop = document.getElementById('ctrl-drop');
-
       const finalScoreEl = document.getElementById('final-score');
       const finalBestEl = document.getElementById('final-best');
       const finalGhostsEl = document.getElementById('final-ghosts');
       const finalJarsEl = document.getElementById('final-jars');
       const finalComboEl = document.getElementById('final-combo');
+
+      const ctrlLeft = document.getElementById('ctrl-left');
+      const ctrlDrop = document.getElementById('ctrl-drop');
+      const ctrlRight = document.getElementById('ctrl-right');
 
       const input = {
         left: false,
@@ -716,7 +887,7 @@
 
       /**
        * =========================================================================
-       * 3. GHOST ARCHETYPES & GAME CONFIGURATION
+       * 3. GHOST ARCHETYPES & DIFFICULTY CONFIGURATIONS
        * =========================================================================
        */
       const GHOST_TYPES = {
@@ -725,19 +896,19 @@
           name: 'Lumina Wisp',
           points: 100,
           timeBonus: 2,
-          radius: 22,
-          baseSpeed: 75,
+          radius: 21,
+          baseSpeed: 68,
           colorMain: '#2ef2b8',
           colorLight: '#a7f3d0',
           colorDark: '#059669',
-          eyeColor: '#052e25'
+          eyeColor: '#042f2e'
         },
         polter: {
           id: 'polter',
           name: 'Polter-Dash',
           points: 250,
           timeBonus: 3,
-          radius: 23,
+          radius: 20,
           baseSpeed: 105,
           colorMain: '#d946ef',
           colorLight: '#f5d0fe',
@@ -749,8 +920,8 @@
           name: 'Golden Phantom',
           points: 500,
           timeBonus: 5,
-          radius: 21,
-          baseSpeed: 135,
+          radius: 19,
+          baseSpeed: 132,
           colorMain: '#fbbf24',
           colorLight: '#fef08a',
           colorDark: '#b45309',
@@ -761,12 +932,86 @@
           name: 'Cursed Skull',
           points: 0,
           timeBonus: -5,
-          radius: 21,
-          baseSpeed: 88,
+          radius: 19,
+          baseSpeed: 64,
           colorMain: '#f43f5e',
           colorLight: '#fda4af',
           colorDark: '#881337',
           eyeColor: '#be123c'
+        }
+      };
+
+      const DIFFICULTY_ORDER = ['easy', 'medium', 'hard'];
+
+      const DIFFICULTIES = {
+        easy: {
+          id: 'easy',
+          label: 'EASY',
+          startTime: 75,
+          sealTimeBonus: 8,
+          sealPointBonus: 500,
+          speedMult: 0.7,
+          polterDashMult: 2.1,
+          polterCooldown: 2.0,
+          goldenInvisRatio: 0.26,
+          initialJarCap: 3,
+          skullBaseChance: 0.10,
+          skullMaxChance: 0.16,
+          skullTimePenalty: 3,
+          skullStunDuration: 0.45,
+          grabRadiusBonus: 24,
+          pendulumTorque: 0.014,
+          pendulumDamping: 5.2,
+          scoreMult: 1.0,
+          activeClass: 'diff-easy-active',
+          badgeClass: 'bg-[#39ff14]/15 text-[#39ff14] border-[#39ff14]/60 shadow-[0_0_10px_rgba(57,255,20,0.3)]',
+          cardBorderClass: 'border-[#39ff14]/50'
+        },
+        medium: {
+          id: 'medium',
+          label: 'MEDIUM',
+          startTime: 60,
+          sealTimeBonus: 6,
+          sealPointBonus: 500,
+          speedMult: 1.0,
+          polterDashMult: 2.55,
+          polterCooldown: 1.6,
+          goldenInvisRatio: 0.36,
+          initialJarCap: 4,
+          skullBaseChance: 0.17,
+          skullMaxChance: 0.24,
+          skullTimePenalty: 5,
+          skullStunDuration: 0.65,
+          grabRadiusBonus: 17,
+          pendulumTorque: 0.018,
+          pendulumDamping: 4.6,
+          scoreMult: 1.5,
+          activeClass: 'diff-medium-active',
+          badgeClass: 'bg-[#00f5d4]/15 text-[#00f5d4] border-[#00f5d4]/60 shadow-[0_0_10px_rgba(0,245,212,0.3)]',
+          cardBorderClass: 'border-[#00f5d4]/50'
+        },
+        hard: {
+          id: 'hard',
+          label: 'HARD',
+          startTime: 45,
+          sealTimeBonus: 5,
+          sealPointBonus: 500,
+          speedMult: 1.45,
+          polterDashMult: 3.15,
+          polterCooldown: 1.1,
+          goldenInvisRatio: 0.54,
+          initialJarCap: 5,
+          skullBaseChance: 0.26,
+          skullMaxChance: 0.35,
+          skullTimePenalty: 7,
+          skullStunDuration: 0.9,
+          grabRadiusBonus: 14,
+          pendulumTorque: 0.027,
+          pendulumDamping: 3.4,
+          scoreMult: 2.0,
+          activeClass: 'diff-hard-active',
+          badgeClass: 'bg-[#ff2a6d]/20 text-[#ff2a6d] border-[#ff2a6d]/65 shadow-[0_0_12px_rgba(255,42,109,0.35)]',
+          cardBorderClass: 'border-[#ff2a6d]/55'
         }
       };
 
@@ -780,27 +1025,27 @@
         huntMinX: 235,
         huntMaxX: 760,
         jar: {
-          centerX: 100,
-          topY: 215,
-          bottomY: 495,
-          width: 118,
-          neckWidth: 74,
-          neckHeight: 28
+          centerX: 98,
+          topY: 225,
+          bottomY: 512,
+          width: 112,
+          neckWidth: 72,
+          neckHeight: 24
         }
       };
 
-      // Persistent High Score helper
-      function getHighScore() {
+      // Persistent Best Score helper per difficulty level
+      function getBestScore(level = 'medium') {
         try {
-          return parseInt(localStorage.getItem('ectoclaw_highscore') || '0', 10) || 0;
+          return parseInt(localStorage.getItem(`clawCatcher_best_${level}`) || '0', 10) || 0;
         } catch (e) {
           return 0;
         }
       }
 
-      function setHighScore(val) {
+      function setBestScore(level, val) {
         try {
-          localStorage.setItem('ectoclaw_highscore', String(val));
+          localStorage.setItem(`clawCatcher_best_${level}`, String(val));
         } catch (e) {
           // Ignore storage restrictions
         }
@@ -811,19 +1056,22 @@
        * 4. CORE GAME STATE
        * =========================================================================
        */
+      let selectedDifficulty = 'medium';
+
       const game = {
         mode: 'START', // 'START' | 'PLAYING' | 'GAMEOVER'
+        difficulty: 'medium',
         score: 0,
-        highScore: getHighScore(),
+        highScore: getBestScore('medium'),
         combo: 1,
         maxCombo: 1,
         totalGhostsCaught: 0,
         jarsSealed: 0,
         jarNumber: 1,
         jarCapacity: 4,
-        jarGhosts: [], // Ghosts currently trapped and floating inside the jar
-        jarSealedAnim: 0, // >0 while jar sealing cork celebration plays
-        jarSwapAnim: 0, // >0 while new jar slides up
+        jarGhosts: [],
+        jarSealedAnim: 0,
+        jarSwapAnim: 0,
         timeRemaining: 60,
         maxTime: 60,
         lastWholeSecond: 60,
@@ -842,7 +1090,7 @@
           maxCable: 440,
           angle: 0,
           angularVel: 0,
-          openRatio: 0.25, // 0 = closed, 1 = wide open
+          openRatio: 0.25,
           stateTimer: 0,
           caughtGhost: null,
           stunTimer: 0,
@@ -852,7 +1100,70 @@
 
       /**
        * =========================================================================
-       * 5. RESIZE & RESPONSIVE GEOMETRY
+       * 5. DIFFICULTY SELECTION & LIVE PREVIEW UPDATES
+       * =========================================================================
+       */
+      function getDiffConfig() {
+        return DIFFICULTIES[selectedDifficulty] || DIFFICULTIES.medium;
+      }
+
+      function selectDifficulty(level, playSound = false) {
+        if (!DIFFICULTIES[level]) return;
+        selectedDifficulty = level;
+        game.difficulty = level;
+
+        const cfg = getDiffConfig();
+        const bestForLevel = getBestScore(level);
+        game.highScore = bestForLevel;
+
+        if (playSound) {
+          sound.init();
+          sound.playSelectTone(level);
+        }
+
+        // Update all difficulty buttons across Start & Game Over screens
+        diffButtons.forEach((btn) => {
+          const btnLevel = btn.getAttribute('data-level');
+          const btnCfg = DIFFICULTIES[btnLevel];
+          const badge = btn.querySelector('[data-selected-badge]');
+
+          btn.classList.remove('diff-easy-active', 'diff-medium-active', 'diff-hard-active');
+          if (btnLevel === level) {
+            btn.classList.add(btnCfg.activeClass);
+            if (badge) badge.classList.remove('hidden');
+          } else {
+            if (badge) badge.classList.add('hidden');
+          }
+        });
+
+        // Update Start Screen Live Level Preview Card
+        const speedLabel = `${cfg.speedMult.toFixed(cfg.speedMult % 1 === 0 ? 1 : 2)}x`;
+        const multLabel = `${cfg.scoreMult.toFixed(1)}x`;
+        const bestLabel = bestForLevel.toLocaleString();
+
+        startPreviewCard.className = `grid grid-cols-5 gap-1.5 p-2 rounded-xl bg-[#0a0718]/95 border text-center transition-colors ${cfg.cardBorderClass}`;
+        prevTimeEl.textContent = `${cfg.startTime}s`;
+        prevQuotaEl.textContent = `${cfg.initialJarCap}`;
+        prevSpeedEl.textContent = speedLabel;
+        prevMultEl.textContent = multLabel;
+        prevBestEl.textContent = bestLabel;
+
+        // Update Game Over Screen Live Level Preview Card
+        gameoverPreviewCard.className = `grid grid-cols-5 gap-1 p-1.5 rounded-xl bg-[#0a0718]/95 border text-center transition-colors ${cfg.cardBorderClass}`;
+        goPrevTimeEl.textContent = `${cfg.startTime}s`;
+        goPrevQuotaEl.textContent = `${cfg.initialJarCap}`;
+        goPrevSpeedEl.textContent = speedLabel;
+        goPrevMultEl.textContent = multLabel;
+        goPrevBestEl.textContent = bestLabel;
+
+        // Update Top HUD Difficulty Pill Badge
+        hudDiffBadge.textContent = cfg.label;
+        hudDiffBadge.className = `font-mono-arcade text-[10px] sm:text-xs font-extrabold px-2 py-0.5 rounded-md border transition-colors ${cfg.badgeClass}`;
+      }
+
+      /**
+       * =========================================================================
+       * 6. RESIZE & RESPONSIVE GEOMETRY
        * =========================================================================
        */
       function resizeCanvas() {
@@ -866,7 +1177,6 @@
         canvas.height = Math.floor(layout.height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        // Scale vertical landmarks cleanly
         layout.railY = Math.max(36, Math.min(52, layout.height * 0.085));
         layout.floorY = layout.height - Math.max(22, layout.height * 0.055);
         game.claw.minCable = Math.max(34, layout.height * 0.075);
@@ -876,7 +1186,6 @@
           game.claw.cableLength = game.claw.minCable;
         }
 
-        // Left Containment Jar Zone (~23% on desktop, ~27% on compact mobile)
         const jarZoneRatio = layout.width < 540 ? 0.28 : 0.23;
         layout.dividerX = Math.round(layout.width * jarZoneRatio);
 
@@ -888,11 +1197,9 @@
         layout.jar.bottomY = layout.floorY - 12;
         layout.jar.topY = Math.max(layout.railY + 115, layout.height * 0.38);
 
-        // Hunting Chamber Horizontal Bounds
         layout.huntMinX = layout.dividerX + 34;
         layout.huntMaxX = layout.width - 34;
 
-        // Clamp claw X within valid bounds
         if (game.claw.state === 'IDLE' || game.claw.state === 'DROPPING') {
           game.claw.x = Math.max(layout.huntMinX, Math.min(layout.huntMaxX, game.claw.x));
         }
@@ -905,7 +1212,7 @@
 
       /**
        * =========================================================================
-       * 6. ENTITY SPAWNING & PARTICLES
+       * 7. ENTITY SPAWNING & PARTICLES
        * =========================================================================
        */
       function initAmbientMotes() {
@@ -914,24 +1221,24 @@
           game.ambientMotes.push({
             x: Math.random() * layout.width,
             y: Math.random() * layout.height,
-            r: 1 + Math.random() * 2.2,
-            vy: -8 - Math.random() * 14,
-            vx: (Math.random() - 0.5) * 10,
+            r: 1.2 + Math.random() * 2.2,
+            vx: (Math.random() - 0.5) * 14,
+            vy: -6 - Math.random() * 14,
             alpha: 0.15 + Math.random() * 0.35,
-            hue: Math.random() > 0.4 ? '#2ef2b8' : '#c084fc'
+            hue: Math.random() < 0.6 ? '#00f5d4' : '#c084fc'
           });
         }
       }
 
-      function spawnParticles(x, y, color, count = 16, speed = 150) {
+      function spawnParticles(x, y, color, count = 12, speedMax = 150) {
         for (let i = 0; i < count; i++) {
-          const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-          const spd = speed * (0.4 + Math.random() * 0.75);
+          const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+          const speed = 35 + Math.random() * speedMax;
           game.particles.push({
             x,
             y,
-            vx: Math.cos(ang) * spd,
-            vy: Math.sin(ang) * spd - 20,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 25,
             size: 2.5 + Math.random() * 3.8,
             color,
             life: 0.45 + Math.random() * 0.35,
@@ -940,33 +1247,33 @@
         }
       }
 
-      function spawnFloatingText(x, y, text, color = '#2ef2b8', scale = 1) {
+      function spawnFloatingText(x, y, text, color = '#00f5d4', scale = 1) {
         game.floatingTexts.push({
           x,
           y,
+          vy: -42,
           text,
           color,
           scale,
-          vy: -48,
-          life: 1.15,
-          maxLife: 1.15
+          life: 1.05,
+          maxLife: 1.05
         });
       }
 
       function chooseGhostType() {
-        const difficulty = Math.min(1, (game.jarNumber - 1) * 0.15);
+        const cfg = getDiffConfig();
+        const waveScale = Math.min(1, (game.jarNumber - 1) * 0.15);
         const roll = Math.random();
-        // ~18% Cursed Skull (scales slightly up to 24%)
-        if (roll < 0.17 + difficulty * 0.07) return GHOST_TYPES.skull;
-        // ~15% Golden Phantom
-        if (roll < 0.32 + difficulty * 0.08) return GHOST_TYPES.golden;
-        // ~30% Polter-Dash
-        if (roll < 0.62 + difficulty * 0.08) return GHOST_TYPES.polter;
-        // Remaining Lumina Wisp
+        const skullChance = cfg.skullBaseChance + waveScale * (cfg.skullMaxChance - cfg.skullBaseChance);
+
+        if (roll < skullChance) return GHOST_TYPES.skull;
+        if (roll < skullChance + 0.16 + waveScale * 0.06) return GHOST_TYPES.golden;
+        if (roll < skullChance + 0.46 + waveScale * 0.08) return GHOST_TYPES.polter;
         return GHOST_TYPES.wisp;
       }
 
       function spawnGhost(forcedType = null) {
+        const cfg = getDiffConfig();
         const type = forcedType || chooseGhostType();
         const padX = 36;
         const minX = layout.dividerX + padX;
@@ -977,7 +1284,7 @@
         if (maxX <= minX || maxY <= minY) return;
 
         const dir = Math.random() < 0.5 ? 1 : -1;
-        const speedScale = 1 + (game.jarNumber - 1) * 0.06;
+        const speedScale = cfg.speedMult * (1 + (game.jarNumber - 1) * 0.055);
 
         game.ghosts.push({
           type,
@@ -987,10 +1294,11 @@
           vx: dir * type.baseSpeed * speedScale * (0.85 + Math.random() * 0.3),
           bobPhase: Math.random() * Math.PI * 2,
           bobAmp: type.id === 'wisp' ? 14 : 9,
-          bobFreq: type.id === 'wisp' ? 2.4 : 3.2,
-          dashTimer: 1.4 + Math.random() * 1.8,
+          bobFreq: (type.id === 'wisp' ? 2.4 : 3.2) * Math.max(0.85, cfg.speedMult * 0.85),
+          dashTimer: cfg.polterCooldown + Math.random() * 1.4,
           isDashing: false,
           phaseTimer: Math.random() * 4,
+          shimmerTimer: 0,
           alpha: 1,
           wiggle: 0,
           caught: false
@@ -1007,12 +1315,15 @@
           GHOST_TYPES.skull,
           GHOST_TYPES.wisp
         ];
+        if (selectedDifficulty === 'hard') {
+          starterPool.push(GHOST_TYPES.skull, GHOST_TYPES.polter);
+        }
         starterPool.forEach((t) => spawnGhost(t));
       }
 
       /**
        * =========================================================================
-       * 7. GAME FLOW & HUD UPDATES
+       * 8. GAME FLOW & HUD UPDATES
        * =========================================================================
        */
       function updateHUD() {
@@ -1047,7 +1358,6 @@
           hudTimeBar.className = 'h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 transition-all duration-150';
         }
 
-        // Disable Drop button while claw is busy
         ctrlDrop.disabled = game.mode !== 'PLAYING' || game.claw.state !== 'IDLE';
       }
 
@@ -1055,20 +1365,24 @@
         sound.init();
         resizeCanvas();
 
+        const cfg = getDiffConfig();
+
         game.mode = 'PLAYING';
+        game.difficulty = selectedDifficulty;
         game.score = 0;
+        game.highScore = getBestScore(selectedDifficulty);
         game.combo = 1;
         game.maxCombo = 1;
         game.totalGhostsCaught = 0;
         game.jarsSealed = 0;
         game.jarNumber = 1;
-        game.jarCapacity = 4;
+        game.jarCapacity = cfg.initialJarCap;
         game.jarGhosts = [];
         game.jarSealedAnim = 0;
         game.jarSwapAnim = 0;
-        game.timeRemaining = 60;
-        game.maxTime = 60;
-        game.lastWholeSecond = 60;
+        game.timeRemaining = cfg.startTime;
+        game.maxTime = cfg.startTime;
+        game.lastWholeSecond = cfg.startTime;
         game.screenShake = 0;
         game.particles = [];
         game.floatingTexts = [];
@@ -1084,10 +1398,11 @@
         game.claw.stunTimer = 0;
 
         populateInitialGhosts();
+        selectDifficulty(selectedDifficulty, false);
         updateHUD();
 
-        overlayStart.classList.add('hidden');
-        overlayGameover.classList.add('hidden');
+        startScreen.classList.add('hidden');
+        gameoverScreen.classList.add('hidden');
       }
 
       function triggerGameOver() {
@@ -1095,19 +1410,21 @@
         input.left = false;
         input.right = false;
 
+        const cfg = getDiffConfig();
         if (game.score > game.highScore) {
           game.highScore = game.score;
-          setHighScore(game.highScore);
+          setBestScore(selectedDifficulty, game.highScore);
         }
 
         finalScoreEl.textContent = game.score.toLocaleString();
-        finalBestEl.textContent = `BEST: ${game.highScore.toLocaleString()}`;
+        finalBestEl.textContent = `${cfg.label} BEST: ${game.highScore.toLocaleString()}`;
         finalGhostsEl.textContent = game.totalGhostsCaught;
         finalJarsEl.textContent = game.jarsSealed;
         finalComboEl.textContent = `${game.maxCombo}x`;
 
+        selectDifficulty(selectedDifficulty, false);
         updateHUD();
-        overlayGameover.classList.remove('hidden');
+        gameoverScreen.classList.remove('hidden');
       }
 
       function triggerDropClaw() {
@@ -1123,7 +1440,7 @@
 
       /**
        * =========================================================================
-       * 8. CLAW STATE MACHINE & PHYSICS UPDATE
+       * 9. CLAW STATE MACHINE & PHYSICS UPDATE
        * =========================================================================
        */
       function getClawTipPosition() {
@@ -1137,16 +1454,18 @@
 
       function updateClaw(dt) {
         const claw = game.claw;
+        const cfg = getDiffConfig();
         const moveSpeed = Math.max(240, (layout.huntMaxX - layout.huntMinX) * 0.56);
 
-        // Pendulum sway physics
+        // Pendulum sway physics scaled by difficulty inertia
         const springK = 26;
-        const damping = 4.6;
-        const accelTorque = -claw.vx * 0.018;
+        const damping = cfg.pendulumDamping;
+        const accelTorque = -claw.vx * cfg.pendulumTorque;
         const angularAccel = -springK * claw.angle - damping * claw.angularVel + accelTorque;
         claw.angularVel += angularAccel * dt;
         claw.angle += claw.angularVel * dt;
-        claw.angle = Math.max(-0.32, Math.min(0.32, claw.angle));
+        const maxSwing = selectedDifficulty === 'hard' ? 0.42 : 0.32;
+        claw.angle = Math.max(-maxSwing, Math.min(maxSwing, claw.angle));
 
         switch (claw.state) {
           case 'IDLE': {
@@ -1181,7 +1500,6 @@
 
             const tip = getClawTipPosition();
 
-            // Check collision with active ghosts / hazards
             for (let i = 0; i < game.ghosts.length; i++) {
               const g = game.ghosts[i];
               if (g.caught) continue;
@@ -1193,26 +1511,25 @@
 
               const dx = tip.x - g.x;
               const dy = tip.y - g.y;
-              const hitRadius = g.type.radius + 17;
+              const hitRadius = g.type.radius + (g.type.id === 'skull' ? 16 : cfg.grabRadiusBonus);
 
               if (dx * dx + dy * dy <= hitRadius * hitRadius) {
                 if (g.type.id === 'skull') {
-                  // Grabbed a Cursed Skull!
                   sound.playSkullZap();
-                  game.screenShake = 0.42;
+                  game.screenShake = 0.45;
                   game.combo = 1;
-                  game.timeRemaining = Math.max(0, game.timeRemaining - 5);
-                  spawnParticles(g.x, g.y, '#f43f5e', 24, 210);
-                  spawnFloatingText(g.x, g.y - 16, 'CURSED! -5s', '#fb7185', 1.15);
+                  const penalty = cfg.skullTimePenalty;
+                  game.timeRemaining = Math.max(0, game.timeRemaining - penalty);
+                  spawnParticles(g.x, g.y, '#ff2a6d', 24, 210);
+                  spawnFloatingText(g.x, g.y - 16, `CURSED! -${penalty}s`, '#fb7185', 1.15);
                   game.ghosts.splice(i, 1);
 
                   claw.state = 'STUNNED';
-                  claw.stunTimer = 0.65;
+                  claw.stunTimer = cfg.skullStunDuration;
                   claw.openRatio = 0.2;
                   updateHUD();
                   return;
                 } else {
-                  // Caught a Ghost!
                   sound.playClawSnap();
                   sound.playGhostCatch(game.combo - 1);
                   g.caught = true;
@@ -1228,7 +1545,6 @@
               }
             }
 
-            // Reached chamber floor without catching anything
             if (claw.cableLength >= claw.maxCable) {
               claw.cableLength = claw.maxCable;
               sound.playMissClunk();
@@ -1300,7 +1616,6 @@
           }
 
           case 'RETURNING': {
-            // Wait briefly if jar is currently sealing so player enjoys the effect
             if (game.jarSealedAnim > 0.35) {
               claw.vx = 0;
               break;
@@ -1335,7 +1650,6 @@
               spawnParticles(tip.x, tip.y, '#fb7185', 5, 95);
             }
 
-            // Retract cable while stunned
             const stunReel = Math.max(340, layout.height * 0.72);
             claw.cableLength = Math.max(claw.minCable, claw.cableLength - stunReel * dt);
 
@@ -1347,7 +1661,6 @@
           }
         }
 
-        // Update trapped-in-claw ghost wiggle
         if (claw.caughtGhost) {
           claw.caughtGhost.wiggle += dt * 18;
         }
@@ -1355,20 +1668,20 @@
 
       /**
        * =========================================================================
-       * 9. CONTAINMENT JAR DEPOSIT & QUOTA SEALING
+       * 10. CONTAINMENT JAR DEPOSIT & QUOTA SEALING
        * =========================================================================
        */
       function depositGhostIntoJar(ghost) {
         sound.playJarClink();
+        const cfg = getDiffConfig();
 
-        const pts = ghost.type.points * game.combo;
+        const pts = Math.round(ghost.type.points * game.combo * cfg.scoreMult);
         const bonusSec = ghost.type.timeBonus;
 
         game.score += pts;
         game.totalGhostsCaught += 1;
         game.timeRemaining = Math.min(game.maxTime, game.timeRemaining + bonusSec);
 
-        // Visual feedback at jar mouth
         const mouthX = layout.jar.centerX;
         const mouthY = layout.jar.topY + 12;
         spawnParticles(mouthX, mouthY, ghost.type.colorMain, 18, 135);
@@ -1378,15 +1691,12 @@
         spawnFloatingText(mouthX + 18, mouthY - 12, `+${pts}${comboLabel}`, ghost.type.colorMain, 1.05);
         spawnFloatingText(mouthX + 18, mouthY + 10, `+${bonusSec}s`, '#a7f3d0', 0.9);
 
-        // Increment combo for next capture
         game.combo += 1;
         if (game.combo > game.maxCombo) {
           game.maxCombo = game.combo;
         }
 
-        // Add ghost inside the glass containment jar physics simulation
         const jar = layout.jar;
-        const innerPad = 18;
         game.jarGhosts.push({
           type: ghost.type,
           x: jar.centerX + (Math.random() - 0.5) * (jar.width * 0.35),
@@ -1394,10 +1704,10 @@
           vx: (Math.random() - 0.5) * 70,
           vy: 45 + Math.random() * 40,
           scale: 0.54,
-          bobPhase: Math.random() * Math.PI * 2
+          bobPhase: Math.random() * Math.PI * 2,
+          trail: []
         });
 
-        // Check if Jar Quota is reached!
         if (game.jarGhosts.length >= game.jarCapacity) {
           sealCurrentJar();
         }
@@ -1407,9 +1717,10 @@
 
       function sealCurrentJar() {
         sound.playJarSealed();
+        const cfg = getDiffConfig();
 
-        const bonusPoints = 500;
-        const bonusTime = 6;
+        const bonusPoints = Math.round(cfg.sealPointBonus * cfg.scoreMult);
+        const bonusTime = cfg.sealTimeBonus;
 
         game.score += bonusPoints;
         game.jarsSealed += 1;
@@ -1418,10 +1729,10 @@
 
         const jx = layout.jar.centerX;
         const jy = layout.jar.topY - 8;
-        spawnParticles(jx, jy, '#fbbf24', 28, 190);
-        spawnParticles(jx, jy, '#2ef2b8', 22, 160);
+        spawnParticles(jx, jy, '#fbbf24', 32, 205);
+        spawnParticles(jx, jy, '#00f5d4', 24, 170);
         spawnFloatingText(jx + 35, jy - 24, 'JAR SEALED!', '#fbbf24', 1.25);
-        spawnFloatingText(jx + 35, jy, `+${bonusPoints} BONUS · +${bonusTime}s`, '#2ef2b8', 1.0);
+        spawnFloatingText(jx + 35, jy, `+${bonusPoints} BONUS · +${bonusTime}s`, '#00f5d4', 1.0);
       }
 
       function updateJarSimulation(dt) {
@@ -1431,12 +1742,14 @@
         const topWall = jar.topY + jar.neckHeight + 14;
         const bottomWall = jar.bottomY - 16;
 
-        // Animate trapped ghosts floating inside the jar
         for (let i = 0; i < game.jarGhosts.length; i++) {
           const jg = game.jarGhosts[i];
           jg.bobPhase += dt * 3.5;
 
-          // Gentle buoyant upward drift + swirl
+          if (!jg.trail) jg.trail = [];
+          jg.trail.push({ x: jg.x, y: jg.y });
+          if (jg.trail.length > 7) jg.trail.shift();
+
           jg.vy += Math.sin(jg.bobPhase) * 35 * dt - 12 * dt;
           jg.vx += Math.cos(jg.bobPhase * 0.8) * 28 * dt;
 
@@ -1463,14 +1776,14 @@
           }
         }
 
-        // Handle Jar Sealing Celebration -> Fresh Jar Swap
         if (game.jarSealedAnim > 0) {
           game.jarSealedAnim -= dt;
           if (game.jarSealedAnim <= 0) {
             game.jarSealedAnim = 0;
             game.jarGhosts = [];
             game.jarNumber += 1;
-            game.jarCapacity = Math.min(8, 3 + game.jarNumber); // 4, 5, 6, 7, 8...
+            const cfg = getDiffConfig();
+            game.jarCapacity = Math.min(9, cfg.initialJarCap + (game.jarNumber - 1));
             game.jarSwapAnim = 0.45;
             updateHUD();
           }
@@ -1483,26 +1796,28 @@
 
       /**
        * =========================================================================
-       * 10. GHOST AI & WORLD UPDATE
+       * 11. GHOST AI & WORLD UPDATE
        * =========================================================================
        */
       function updateGhosts(dt) {
+        const cfg = getDiffConfig();
         const minX = layout.dividerX + 30;
         const maxX = layout.width - 30;
         const minY = layout.railY + 86;
         const maxY = layout.floorY - 40;
 
-        // Maintain healthy ghost population in chamber
-        const targetCount = Math.min(9, 6 + Math.floor((game.jarNumber - 1) * 0.6));
+        const basePop = selectedDifficulty === 'hard' ? 7 : 6;
+        const targetCount = Math.min(10, basePop + Math.floor((game.jarNumber - 1) * 0.6));
         game.spawnTimer -= dt;
         if (game.ghosts.length < targetCount && game.spawnTimer <= 0) {
           spawnGhost();
-          game.spawnTimer = 0.75;
+          game.spawnTimer = selectedDifficulty === 'hard' ? 0.55 : 0.75;
         }
 
         for (let i = 0; i < game.ghosts.length; i++) {
           const g = game.ghosts[i];
           g.bobPhase += dt * g.bobFreq;
+          const scaledBase = g.type.baseSpeed * cfg.speedMult * (1 + (game.jarNumber - 1) * 0.055);
 
           // Polter-Dash periodic burst behavior
           if (g.type.id === 'polter') {
@@ -1510,32 +1825,41 @@
             if (!g.isDashing && g.dashTimer <= 0) {
               g.isDashing = true;
               g.dashTimer = 0.42;
-              g.vx = Math.sign(g.vx || 1) * g.type.baseSpeed * 2.55;
-              spawnParticles(g.x, g.y, '#e879f9', 6, 70);
-            } else if (g.isDashing && g.dashTimer <= 0) {
-              g.isDashing = false;
-              g.dashTimer = 1.6 + Math.random() * 1.5;
-              g.vx = Math.sign(g.vx || 1) * g.type.baseSpeed;
+              g.vx = Math.sign(g.vx || 1) * scaledBase * cfg.polterDashMult;
+              spawnParticles(g.x, g.y, '#e879f9', 7, 75);
+            } else if (g.isDashing) {
+              if (Math.random() < 0.45) {
+                spawnParticles(g.x, g.y, '#d946ef', 1, 25);
+              }
+              if (g.dashTimer <= 0) {
+                g.isDashing = false;
+                g.dashTimer = cfg.polterCooldown + Math.random() * 1.4;
+                g.vx = Math.sign(g.vx || 1) * scaledBase;
+              }
             }
           }
 
           // Golden Phantom phase visibility cycle
           if (g.type.id === 'golden') {
             g.phaseTimer += dt;
-            const cycle = g.phaseTimer % 4.2;
-            if (cycle > 2.7) {
-              // Phased semi-transparent state
+            const cycleLen = 4.2;
+            const solidCutoff = cycleLen * (1 - cfg.goldenInvisRatio);
+            const cycle = g.phaseTimer % cycleLen;
+            if (cycle > solidCutoff) {
               g.alpha += (0.24 - g.alpha) * Math.min(1, dt * 8);
             } else {
-              // Materialized solid state
               g.alpha += (1.0 - g.alpha) * Math.min(1, dt * 8);
+              g.shimmerTimer = (g.shimmerTimer || 0) - dt;
+              if (g.shimmerTimer <= 0) {
+                g.shimmerTimer = 0.28;
+                spawnParticles(g.x + (Math.random() - 0.5) * 20, g.y + (Math.random() - 0.5) * 20, '#fef08a', 1, 20);
+              }
             }
           }
 
           g.x += g.vx * dt;
           g.y = g.baseY + Math.sin(g.bobPhase) * g.bobAmp;
 
-          // Bounce off hunting chamber walls
           if (g.x < minX) {
             g.x = minX;
             g.vx = Math.abs(g.vx);
@@ -1549,7 +1873,6 @@
       }
 
       function updateParticlesAndTexts(dt) {
-        // Ambient motes
         for (let i = 0; i < game.ambientMotes.length; i++) {
           const m = game.ambientMotes[i];
           m.x += m.vx * dt;
@@ -1562,7 +1885,6 @@
           if (m.x > layout.width) m.x = 0;
         }
 
-        // Burst particles
         for (let i = game.particles.length - 1; i >= 0; i--) {
           const p = game.particles[i];
           p.x += p.vx * dt;
@@ -1574,7 +1896,6 @@
           }
         }
 
-        // Floating score & status popups
         for (let i = game.floatingTexts.length - 1; i >= 0; i--) {
           const ft = game.floatingTexts[i];
           ft.y += ft.vy * dt;
@@ -1588,14 +1909,13 @@
 
       /**
        * =========================================================================
-       * 11. CANVAS RENDERING ENGINE
+       * 12. CANVAS RENDERING ENGINE
        * =========================================================================
        */
       function drawBackground() {
         const w = layout.width;
         const h = layout.height;
 
-        // Deep haunted indigo gradient
         const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
         bgGrad.addColorStop(0, '#090717');
         bgGrad.addColorStop(0.55, '#120d2b');
@@ -1603,7 +1923,26 @@
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, w, h);
 
-        // Subtle gothic arched chamber windows in background
+        // Subtle Neon Laboratory Grid Lines
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.045)';
+        ctx.lineWidth = 1;
+        const gridStep = 44;
+        for (let gx = layout.dividerX; gx < w; gx += gridStep) {
+          ctx.beginPath();
+          ctx.moveTo(gx, layout.railY);
+          ctx.lineTo(gx, layout.floorY);
+          ctx.stroke();
+        }
+        for (let gy = layout.railY + gridStep; gy < layout.floorY; gy += gridStep) {
+          ctx.beginPath();
+          ctx.moveTo(layout.dividerX, gy);
+          ctx.lineTo(w, gy);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // Gothic arched chamber windows
         ctx.save();
         ctx.strokeStyle = 'rgba(139, 92, 246, 0.09)';
         ctx.lineWidth = 2;
@@ -1625,7 +1964,7 @@
         }
         ctx.restore();
 
-        // Ambient ecto motes
+        // Ambient floating motes
         for (let i = 0; i < game.ambientMotes.length; i++) {
           const m = game.ambientMotes[i];
           ctx.save();
@@ -1637,14 +1976,13 @@
           ctx.restore();
         }
 
-        // Containment Zone vs Hunting Chamber Floor & Barrier
+        // Floor
         const floorGrad = ctx.createLinearGradient(0, layout.floorY, 0, h);
         floorGrad.addColorStop(0, '#22194d');
         floorGrad.addColorStop(1, '#0d0921');
         ctx.fillStyle = floorGrad;
         ctx.fillRect(0, layout.floorY, w, h - layout.floorY);
 
-        // Glowing floor trim line
         ctx.strokeStyle = '#3b2d7a';
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -1656,9 +1994,9 @@
         const divX = layout.dividerX;
         const barrierTop = layout.jar.topY + 25;
         const barrierGrad = ctx.createLinearGradient(0, barrierTop, 0, layout.floorY);
-        barrierGrad.addColorStop(0, 'rgba(46, 242, 184, 0.05)');
-        barrierGrad.addColorStop(0.5, 'rgba(46, 242, 184, 0.35)');
-        barrierGrad.addColorStop(1, 'rgba(46, 242, 184, 0.75)');
+        barrierGrad.addColorStop(0, 'rgba(0, 245, 212, 0.05)');
+        barrierGrad.addColorStop(0.5, 'rgba(0, 245, 212, 0.35)');
+        barrierGrad.addColorStop(1, 'rgba(0, 245, 212, 0.75)');
 
         ctx.strokeStyle = barrierGrad;
         ctx.lineWidth = 3;
@@ -1669,9 +2007,8 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Emitter pylon at base of divider
         ctx.fillStyle = '#1e1645';
-        ctx.strokeStyle = '#2ef2b8';
+        ctx.strokeStyle = '#00f5d4';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(divX - 8, layout.floorY - 14, 16, 14, 4);
@@ -1679,7 +2016,7 @@
         ctx.stroke();
       }
 
-      function drawGhostEntity(g, x, y, scale = 1, alpha = 1, isStunnedSkull = false) {
+      function drawGhostEntity(g, x, y, scale = 1, alpha = 1) {
         const t = g.type;
         const r = t.radius * scale;
 
@@ -1697,7 +2034,6 @@
         ctx.fill();
 
         if (t.id === 'skull') {
-          // Cursed Skull Hazard
           ctx.fillStyle = '#e2e8f0';
           ctx.beginPath();
           ctx.arc(0, -r * 0.12, r * 0.85, Math.PI * 0.85, Math.PI * 2.15);
@@ -1706,21 +2042,18 @@
           ctx.closePath();
           ctx.fill();
 
-          // Glowing Crimson Eye Sockets
           ctx.fillStyle = '#be123c';
           ctx.beginPath();
           ctx.arc(-r * 0.32, -r * 0.08, r * 0.24, 0, Math.PI * 2);
           ctx.arc(r * 0.32, -r * 0.08, r * 0.24, 0, Math.PI * 2);
           ctx.fill();
 
-          // Eye pupils
           ctx.fillStyle = '#fda4af';
           ctx.beginPath();
           ctx.arc(-r * 0.32, -r * 0.08, r * 0.09, 0, Math.PI * 2);
           ctx.arc(r * 0.32, -r * 0.08, r * 0.09, 0, Math.PI * 2);
           ctx.fill();
 
-          // Teeth lines
           ctx.strokeStyle = '#1e1b4b';
           ctx.lineWidth = Math.max(1.5, 2 * scale);
           ctx.beginPath();
@@ -1736,13 +2069,11 @@
           return;
         }
 
-        // Body gradient for cute ghosts
         const bodyGrad = ctx.createRadialGradient(-r * 0.25, -r * 0.3, r * 0.1, 0, 0, r * 1.15);
         bodyGrad.addColorStop(0, t.colorLight);
         bodyGrad.addColorStop(0.55, t.colorMain);
         bodyGrad.addColorStop(1, t.colorDark);
 
-        // Polter-Dash cute little horns
         if (t.id === 'polter') {
           ctx.fillStyle = t.colorLight;
           ctx.beginPath();
@@ -1755,7 +2086,6 @@
           ctx.fill();
         }
 
-        // Golden Phantom floating crown
         if (t.id === 'golden') {
           ctx.fillStyle = '#fef08a';
           ctx.beginPath();
@@ -1768,7 +2098,6 @@
           ctx.fill();
         }
 
-        // Ghost silhouette with wavy tail
         const wave = Math.sin((g.bobPhase || 0) * 2) * r * 0.12;
         ctx.fillStyle = bodyGrad;
         ctx.beginPath();
@@ -1780,7 +2109,6 @@
         ctx.closePath();
         ctx.fill();
 
-        // Dashed outline when Golden Phantom is phased semi-transparent
         if (t.id === 'golden' && alpha < 0.5) {
           ctx.strokeStyle = '#fef08a';
           ctx.lineWidth = 1.5;
@@ -1789,12 +2117,10 @@
           ctx.setLineDash([]);
         }
 
-        // Cute Eyes & Expression
         const lookDir = Math.sign(g.vx || 1) * r * 0.1;
         ctx.fillStyle = t.eyeColor;
 
         if (g.caught) {
-          // Cute > < squint eyes when caught in claw!
           ctx.strokeStyle = t.eyeColor;
           ctx.lineWidth = Math.max(2, 2.5 * scale);
           ctx.lineCap = 'round';
@@ -1808,25 +2134,21 @@
           ctx.lineTo(r * 0.45, r * 0.02);
           ctx.stroke();
 
-          // Little 'O' surprised mouth
           ctx.beginPath();
           ctx.arc(0, r * 0.22, r * 0.16, 0, Math.PI * 2);
           ctx.fill();
         } else {
-          // Normal cute eyes
           ctx.beginPath();
           ctx.arc(-r * 0.32 + lookDir, -r * 0.12, r * 0.16, 0, Math.PI * 2);
           ctx.arc(r * 0.32 + lookDir, -r * 0.12, r * 0.16, 0, Math.PI * 2);
           ctx.fill();
 
-          // Eye highlights
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
           ctx.arc(-r * 0.27 + lookDir, -r * 0.17, r * 0.06, 0, Math.PI * 2);
           ctx.arc(r * 0.37 + lookDir, -r * 0.17, r * 0.06, 0, Math.PI * 2);
           ctx.fill();
 
-          // Cute mouth
           ctx.fillStyle = t.eyeColor;
           ctx.beginPath();
           ctx.ellipse(lookDir, r * 0.18, r * 0.14, r * 0.1, 0, 0, Math.PI * 2);
@@ -1855,17 +2177,16 @@
         baseGrad.addColorStop(0.5, '#3b2a82');
         baseGrad.addColorStop(1, '#1e1645');
         ctx.fillStyle = baseGrad;
-        ctx.strokeStyle = '#2ef2b8';
+        ctx.strokeStyle = '#00f5d4';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(left - 8, bodyBottom - 4, jar.width + 16, 16, 6);
         ctx.fill();
         ctx.stroke();
 
-        // Pedestal Rune Glow
         const runeGlow = ctx.createRadialGradient(jar.centerX, bodyBottom, 4, jar.centerX, bodyBottom - 20, jar.width * 0.75);
-        runeGlow.addColorStop(0, 'rgba(46, 242, 184, 0.32)');
-        runeGlow.addColorStop(1, 'rgba(46, 242, 184, 0)');
+        runeGlow.addColorStop(0, 'rgba(0, 245, 212, 0.32)');
+        runeGlow.addColorStop(1, 'rgba(0, 245, 212, 0)');
         ctx.fillStyle = runeGlow;
         ctx.beginPath();
         ctx.arc(jar.centerX, bodyBottom - 10, jar.width * 0.75, 0, Math.PI * 2);
@@ -1873,16 +2194,16 @@
 
         // Glass Jar Interior Background
         const glassBg = ctx.createLinearGradient(left, bodyTop, right, bodyBottom);
-        glassBg.addColorStop(0, 'rgba(46, 242, 184, 0.14)');
+        glassBg.addColorStop(0, 'rgba(0, 245, 212, 0.14)');
         glassBg.addColorStop(0.5, 'rgba(56, 189, 248, 0.06)');
-        glassBg.addColorStop(1, 'rgba(46, 242, 184, 0.18)');
+        glassBg.addColorStop(1, 'rgba(0, 245, 212, 0.18)');
         ctx.fillStyle = glassBg;
 
         ctx.beginPath();
         ctx.roundRect(left, bodyTop, jar.width, bodyH, 18);
         ctx.fill();
 
-        // Draw all caught ghosts floating happily inside the glass jar!
+        // Draw all caught ghosts floating inside the glass jar
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(left + 3, bodyTop + 3, jar.width - 6, bodyH - 6, 15);
@@ -1890,6 +2211,19 @@
 
         for (let i = 0; i < game.jarGhosts.length; i++) {
           const jg = game.jarGhosts[i];
+          if (jg.trail && jg.trail.length > 1) {
+            for (let t = 0; t < jg.trail.length - 1; t++) {
+              const pt = jg.trail[t];
+              const ratio = (t + 1) / jg.trail.length;
+              ctx.save();
+              ctx.globalAlpha = ratio * 0.25;
+              ctx.fillStyle = jg.type.colorMain;
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 7 * ratio, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+          }
           drawGhostEntity(jg, jg.x, jg.y, jg.scale, 0.95);
         }
         ctx.restore();
@@ -1901,7 +2235,6 @@
         ctx.roundRect(left, bodyTop, jar.width, bodyH, 18);
         ctx.stroke();
 
-        // Funnel Neck Collar
         const neckLeft = jar.centerX - jar.neckWidth * 0.5;
         ctx.fillStyle = 'rgba(165, 243, 252, 0.18)';
         ctx.strokeStyle = 'rgba(165, 243, 252, 0.85)';
@@ -1911,7 +2244,6 @@
         ctx.fill();
         ctx.stroke();
 
-        // Top Glass Lip Ring
         ctx.fillStyle = 'rgba(207, 250, 254, 0.35)';
         ctx.beginPath();
         ctx.roundRect(neckLeft - 5, jar.topY - 3, jar.neckWidth + 10, 8, 4);
@@ -1933,33 +2265,59 @@
         const dotSpacing = Math.min(14, (jar.width - 24) / Math.max(1, dotCount - 1));
         const startDotX = jar.centerX - ((dotCount - 1) * dotSpacing) * 0.5;
         for (let i = 0; i < dotCount; i++) {
-          ctx.fillStyle = i < filledCount ? '#2ef2b8' : 'rgba(255, 255, 255, 0.2)';
+          ctx.fillStyle = i < filledCount ? '#00f5d4' : 'rgba(255, 255, 255, 0.2)';
           ctx.beginPath();
           ctx.arc(startDotX + i * dotSpacing, bodyBottom - 11, 3, 0, Math.PI * 2);
           ctx.fill();
         }
 
-        // Sealing Cork / Energy Lid when Jar Quota is Completed
-        if (game.jarSealedAnim > 0) {
-          const lidW = jar.neckWidth + 8;
-          const lidH = 16;
-          const lidX = jar.centerX - lidW * 0.5;
-          const lidY = jar.topY - 12;
+        // Metallic Containment Lid (pops open when claw delivers/releases)
+        const isClawDelivering = game.claw.state === 'DELIVERING' || game.claw.state === 'RELEASING';
+        const lidW = jar.neckWidth + 10;
+        const lidH = 12;
+        const lidX = jar.centerX - lidW * 0.5;
+        const lidOpenOffset = isClawDelivering ? -22 : -9;
+        const lidAngle = isClawDelivering ? -0.32 : 0;
 
-          ctx.fillStyle = '#fbbf24';
-          ctx.strokeStyle = '#fef08a';
-          ctx.lineWidth = 2;
+        ctx.save();
+        ctx.translate(lidX + 4, jar.topY + lidOpenOffset + lidH * 0.5);
+        ctx.rotate(lidAngle);
+
+        const lidGrad = ctx.createLinearGradient(0, -lidH * 0.5, lidW, lidH * 0.5);
+        if (game.jarSealedAnim > 0) {
+          lidGrad.addColorStop(0, '#f59e0b');
+          lidGrad.addColorStop(0.5, '#fef08a');
+          lidGrad.addColorStop(1, '#d97706');
+        } else {
+          lidGrad.addColorStop(0, '#475569');
+          lidGrad.addColorStop(0.5, '#94a3b8');
+          lidGrad.addColorStop(1, '#334155');
+        }
+        ctx.fillStyle = lidGrad;
+        ctx.strokeStyle = game.jarSealedAnim > 0 ? '#fef08a' : '#00f5d4';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-4, -lidH * 0.5, lidW, lidH, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        // Seal Flash Effect
+        if (game.jarSealedAnim > 0) {
+          const flashAlpha = Math.min(0.65, game.jarSealedAnim * 0.55);
+          ctx.save();
+          ctx.globalAlpha = flashAlpha;
+          ctx.fillStyle = '#fef08a';
           ctx.beginPath();
-          ctx.roundRect(lidX, lidY, lidW, lidH, 5);
+          ctx.roundRect(left - 2, bodyTop - 2, jar.width + 4, bodyH + 4, 20);
           ctx.fill();
-          ctx.stroke();
+          ctx.restore();
         }
 
-        // Subtle Drop Zone Label above Jar
-        ctx.fillStyle = 'rgba(165, 243, 252, 0.7)';
+        ctx.fillStyle = 'rgba(165, 243, 252, 0.75)';
         ctx.font = '700 10px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('CONTAINMENT', jar.centerX, jar.topY - 22);
+        ctx.fillText('CONTAINMENT', jar.centerX, jar.topY - 30);
 
         ctx.restore();
       }
@@ -1968,7 +2326,7 @@
         const claw = game.claw;
         const railY = layout.railY;
 
-        // Top Horizontal Gantry Rail spanning entire cabinet
+        // Top Horizontal Gantry Rail
         const railGrad = ctx.createLinearGradient(0, railY - 7, 0, railY + 7);
         railGrad.addColorStop(0, '#475569');
         railGrad.addColorStop(0.5, '#94a3b8');
@@ -1976,11 +2334,9 @@
         ctx.fillStyle = railGrad;
         ctx.fillRect(14, railY - 6, layout.width - 28, 12);
 
-        // Rail Neon Accent Strip
-        ctx.fillStyle = '#2ef2b8';
+        ctx.fillStyle = '#00f5d4';
         ctx.fillRect(14, railY - 1, layout.width - 28, 2);
 
-        // Rail End Bumpers
         ctx.fillStyle = '#334155';
         ctx.beginPath();
         ctx.roundRect(10, railY - 11, 12, 22, 4);
@@ -1991,16 +2347,14 @@
         ctx.save();
         ctx.translate(claw.x, railY);
 
-        // Carriage Body
         ctx.fillStyle = '#1e1b4b';
-        ctx.strokeStyle = claw.state === 'STUNNED' ? '#f43f5e' : '#38bdf8';
+        ctx.strokeStyle = claw.state === 'STUNNED' ? '#ff2a6d' : '#38bdf8';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.roundRect(-24, -14, 48, 28, 8);
         ctx.fill();
         ctx.stroke();
 
-        // Carriage Wheels
         ctx.fillStyle = '#cbd5e1';
         ctx.beginPath();
         ctx.arc(-13, 0, 4.5, 0, Math.PI * 2);
@@ -2011,7 +2365,6 @@
         ctx.translate(0, 14);
         ctx.rotate(claw.angle);
 
-        // Steel/Energy Winch Cable
         ctx.strokeStyle = claw.state === 'STUNNED' ? '#fb7185' : '#cbd5e1';
         ctx.lineWidth = 3.5;
         ctx.beginPath();
@@ -2019,8 +2372,7 @@
         ctx.lineTo(0, claw.cableLength);
         ctx.stroke();
 
-        // Cable energy pulse highlight
-        ctx.strokeStyle = claw.state === 'STUNNED' ? '#f43f5e' : '#2ef2b8';
+        ctx.strokeStyle = claw.state === 'STUNNED' ? '#ff2a6d' : '#00f5d4';
         ctx.lineWidth = 1.2;
         ctx.setLineDash([5, 5]);
         ctx.beginPath();
@@ -2029,16 +2381,25 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Move to Claw Hub at end of cable
         ctx.translate(0, claw.cableLength);
 
-        // Draw Caught Ghost nestled inside pincers!
+        // Rear Center 3rd Prong
+        const centerProngLen = 22 - claw.openRatio * 5;
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(0, 6);
+        ctx.lineTo(0, 6 + centerProngLen);
+        ctx.stroke();
+
+        // Draw Caught Ghost nestled inside pincers
         if (claw.caughtGhost) {
           const wigX = Math.sin(claw.caughtGhost.wiggle) * 3;
           drawGhostEntity(claw.caughtGhost, wigX, 24, 0.95, 1);
         }
 
-        // Articulated Left & Right Pincer Arms
+        // Articulated Left & Right Outer Pincer Arms
         const openAngle = 0.18 + claw.openRatio * 0.68;
 
         [-1, 1].forEach((side) => {
@@ -2046,7 +2407,6 @@
           ctx.translate(side * 9, 6);
           ctx.rotate(side * -openAngle);
 
-          // Upper arm segment
           ctx.strokeStyle = '#94a3b8';
           ctx.lineWidth = 5;
           ctx.lineCap = 'round';
@@ -2057,15 +2417,13 @@
           ctx.lineTo(side * 4, 31);
           ctx.stroke();
 
-          // Inner neon claw edge
-          ctx.strokeStyle = claw.state === 'STUNNED' ? '#f43f5e' : '#2ef2b8';
+          ctx.strokeStyle = claw.state === 'STUNNED' ? '#ff2a6d' : '#00f5d4';
           ctx.lineWidth = 1.8;
           ctx.beginPath();
           ctx.moveTo(side * 12, 16);
           ctx.lineTo(side * 3, 29);
           ctx.stroke();
 
-          // Joint rivet
           ctx.fillStyle = '#e2e8f0';
           ctx.beginPath();
           ctx.arc(side * 15, 16, 2.5, 0, Math.PI * 2);
@@ -2083,8 +2441,7 @@
         ctx.fill();
         ctx.stroke();
 
-        // Glowing Ecto-Core on Hub
-        ctx.fillStyle = claw.state === 'STUNNED' ? '#f43f5e' : '#2ef2b8';
+        ctx.fillStyle = claw.state === 'STUNNED' ? '#ff2a6d' : '#00f5d4';
         ctx.beginPath();
         ctx.arc(0, 1.5, 4, 0, Math.PI * 2);
         ctx.fill();
@@ -2093,7 +2450,6 @@
       }
 
       function drawParticlesAndPopups() {
-        // Particles
         for (let i = 0; i < game.particles.length; i++) {
           const p = game.particles[i];
           const alpha = Math.max(0, p.life / p.maxLife);
@@ -2106,7 +2462,6 @@
           ctx.restore();
         }
 
-        // Floating Score / Bonus Popups
         for (let i = 0; i < game.floatingTexts.length; i++) {
           const ft = game.floatingTexts[i];
           const alpha = Math.min(1, (ft.life / ft.maxLife) * 1.4);
@@ -2117,7 +2472,6 @@
           ctx.font = `800 ${fontSize}px "Fredoka", sans-serif`;
           ctx.textAlign = 'center';
 
-          // Crisp dark outline for high legibility
           ctx.lineWidth = 4;
           ctx.strokeStyle = '#090714';
           ctx.strokeText(ft.text, ft.x, ft.y);
@@ -2131,7 +2485,6 @@
       function render() {
         ctx.save();
 
-        // Screen shake on Cursed Skull shock
         if (game.screenShake > 0) {
           const mag = game.screenShake * 14;
           ctx.translate((Math.random() - 0.5) * mag, (Math.random() - 0.5) * mag);
@@ -2140,7 +2493,6 @@
         drawBackground();
         drawContainmentJar();
 
-        // Draw active floating ghosts in hunting chamber
         for (let i = 0; i < game.ghosts.length; i++) {
           const g = game.ghosts[i];
           drawGhostEntity(g, g.x, g.y, 1, g.alpha);
@@ -2154,7 +2506,7 @@
 
       /**
        * =========================================================================
-       * 12. MAIN GAME LOOP
+       * 13. MAIN GAME LOOP
        * =========================================================================
        */
       let lastTimestamp = 0;
@@ -2169,7 +2521,6 @@
         }
 
         if (game.mode === 'PLAYING') {
-          // Countdown Timer
           game.timeRemaining -= dt;
           const wholeSec = Math.ceil(game.timeRemaining);
           if (wholeSec < game.lastWholeSecond) {
@@ -2191,7 +2542,6 @@
             updateHUD();
           }
         } else {
-          // Keep background ghosts gently floating during Start / Game Over screens
           updateGhosts(dt * 0.65);
           updateJarSimulation(dt);
           updateParticlesAndTexts(dt);
@@ -2203,10 +2553,41 @@
 
       /**
        * =========================================================================
-       * 13. KEYBOARD, POINTER & TOUCH CONTROLS
+       * 14. KEYBOARD, POINTER & TOUCH CONTROLS
        * =========================================================================
        */
       window.addEventListener('keydown', (e) => {
+        // Start & Game Over Screen Keyboard Controls (1/2/3, Left/Right, Enter)
+        if (game.mode === 'START' || game.mode === 'GAMEOVER') {
+          if (e.key === '1') {
+            selectDifficulty('easy', true);
+            return;
+          } else if (e.key === '2') {
+            selectDifficulty('medium', true);
+            return;
+          } else if (e.key === '3') {
+            selectDifficulty('hard', true);
+            return;
+          } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+            e.preventDefault();
+            const idx = DIFFICULTY_ORDER.indexOf(selectedDifficulty);
+            const prevIdx = (idx + DIFFICULTY_ORDER.length - 1) % DIFFICULTY_ORDER.length;
+            selectDifficulty(DIFFICULTY_ORDER[prevIdx], true);
+            return;
+          } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+            e.preventDefault();
+            const idx = DIFFICULTY_ORDER.indexOf(selectedDifficulty);
+            const nextIdx = (idx + 1) % DIFFICULTY_ORDER.length;
+            selectDifficulty(DIFFICULTY_ORDER[nextIdx], true);
+            return;
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            startNewGame();
+            return;
+          }
+        }
+
+        // Active Gameplay Controls
         if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
           input.left = true;
           ctrlLeft.classList.add('is-pressed');
@@ -2234,7 +2615,17 @@
         }
       });
 
-      // Helper for holdable Left/Right arcade buttons across mouse & touch
+      // Difficulty Selector Buttons (Mouse Click & Touch Tap)
+      diffButtons.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const level = btn.getAttribute('data-level');
+          selectDifficulty(level, true);
+          btn.blur();
+        });
+      });
+
+      // Holdable Left/Right Arcade Deck Buttons
       function bindHoldButton(btn, dirKey) {
         const press = (e) => {
           e.preventDefault();
@@ -2262,17 +2653,13 @@
         triggerDropClaw();
       });
 
-      // Tapping directly inside the hunting chamber also drops the claw for extra convenience
+      // Tapping inside the hunting chamber on the canvas also drops the claw during gameplay
       canvas.addEventListener('pointerdown', (e) => {
         if (game.mode !== 'PLAYING') return;
-        const rect = canvas.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        if (clickX > layout.dividerX && game.claw.state === 'IDLE') {
-          triggerDropClaw();
-        }
+        e.preventDefault();
+        triggerDropClaw();
       });
 
-      // Start, Restart & Mute Buttons
       btnStart.addEventListener('click', startNewGame);
       btnRestart.addEventListener('click', startNewGame);
 
@@ -2285,12 +2672,13 @@
 
       /**
        * =========================================================================
-       * 14. INITIALIZE ON WINDOW LOAD
+       * 15. INITIALIZE ON WINDOW LOAD
        * =========================================================================
        */
       window.onload = function () {
         resizeCanvas();
         initAmbientMotes();
+        selectDifficulty('medium', false);
         populateInitialGhosts();
         updateHUD();
         requestAnimationFrame(gameLoop);
