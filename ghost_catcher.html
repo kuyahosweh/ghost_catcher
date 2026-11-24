@@ -1,0 +1,2301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ECTO-CLAW: Ghost Hunter</title>
+  <!-- Load Tailwind CSS for responsive layout & arcade UI chrome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Arcade & Monospace Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* Custom Arcade Cabinet Styling & Animations */
+    :root {
+      --bg-deep: #090714;
+      --cabinet-border: #2a2152;
+      --ecto-cyan: #2ef2b8;
+      --ecto-purple: #c084fc;
+      --ecto-gold: #fbbf24;
+      --ecto-danger: #f43f5e;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: var(--bg-deep);
+      font-family: 'Fredoka', sans-serif;
+      color: #f8fafc;
+      touch-action: manipulation;
+    }
+
+    .font-mono-arcade {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Glowing Arcade Text Effects */
+    .glow-cyan {
+      text-shadow: 0 0 12px rgba(46, 242, 184, 0.7), 0 0 28px rgba(46, 242, 184, 0.35);
+    }
+
+    .glow-purple {
+      text-shadow: 0 0 12px rgba(192, 132, 252, 0.75), 0 0 26px rgba(168, 85, 247, 0.4);
+    }
+
+    .glow-gold {
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.8), 0 0 24px rgba(245, 158, 11, 0.4);
+    }
+
+    /* Tactile 3D Arcade Push Buttons */
+    .arcade-btn {
+      position: relative;
+      transition: transform 0.07s ease, box-shadow 0.07s ease, filter 0.12s ease;
+      cursor: pointer;
+    }
+
+    .arcade-btn:active,
+    .arcade-btn.is-pressed {
+      transform: translateY(4px);
+    }
+
+    .btn-cyan {
+      background: linear-gradient(180deg, #34f5c5 0%, #0d9488 100%);
+      box-shadow: 0 5px 0 #064e3b, 0 8px 18px rgba(46, 242, 184, 0.35);
+      color: #042f2e;
+    }
+    .btn-cyan:active,
+    .btn-cyan.is-pressed {
+      box-shadow: 0 1px 0 #064e3b, 0 3px 10px rgba(46, 242, 184, 0.35);
+    }
+
+    .btn-drop {
+      background: linear-gradient(180deg, #f43f5e 0%, #be123c 100%);
+      box-shadow: 0 6px 0 #881337, 0 10px 24px rgba(244, 63, 94, 0.45);
+      color: #ffffff;
+    }
+    .btn-drop:active,
+    .btn-drop.is-pressed {
+      box-shadow: 0 1px 0 #881337, 0 4px 12px rgba(244, 63, 94, 0.45);
+    }
+    .btn-drop:disabled {
+      opacity: 0.55;
+      filter: grayscale(0.4);
+      cursor: not-allowed;
+      transform: translateY(2px);
+      box-shadow: 0 3px 0 #881337;
+    }
+
+    .btn-purple {
+      background: linear-gradient(180deg, #c084fc 0%, #7e22ce 100%);
+      box-shadow: 0 5px 0 #3b0764, 0 8px 20px rgba(168, 85, 247, 0.4);
+      color: #ffffff;
+    }
+    .btn-purple:active {
+      box-shadow: 0 1px 0 #3b0764, 0 3px 10px rgba(168, 85, 247, 0.4);
+    }
+
+    /* Subtle Arcade Cabinet Scanline Overlay */
+    .scanlines {
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.22) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+    }
+
+    /* Custom Scrollbar for Field Guide on tiny viewports */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .animate-float {
+      animation: floatSlow 2.6s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center bg-[#090714] p-1.5 sm:p-3">
+
+  <!-- Main Arcade Cabinet Wrapper -->
+  <div id="cabinet-shell" class="relative flex flex-col w-full max-w-5xl h-full max-h-[920px] rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-[#2d235a] bg-[#100c24] shadow-[0_0_50px_rgba(91,33,182,0.35)] overflow-hidden">
+
+    <!-- ==================== TOP HUD BAR ==================== -->
+    <header class="z-20 flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-[#171136] via-[#1f1747] to-[#171136] border-b-2 border-[#322666] shrink-0">
+      
+      <!-- Brand + Score + Combo -->
+      <div class="flex items-center gap-2.5 sm:gap-4">
+        <div class="hidden md:flex items-center gap-2 pr-3 border-r border-[#35296b]">
+          <span class="inline-block w-3 h-3 rounded-full bg-[#2ef2b8] shadow-[0_0_10px_#2ef2b8] animate-pulse"></span>
+          <span class="text-sm font-bold tracking-wider text-purple-200">ECTO-CLAW</span>
+        </div>
+
+        <!-- Score Display -->
+        <div class="flex flex-col">
+          <span class="text-[10px] sm:text-xs uppercase tracking-widest text-purple-300/80 font-semibold">Score</span>
+          <div class="flex items-baseline gap-1.5">
+            <span id="hud-score" class="font-mono-arcade text-lg sm:text-2xl font-extrabold text-[#2ef2b8] glow-cyan leading-none">0</span>
+            <span id="hud-combo" class="hidden font-mono-arcade text-xs sm:text-sm font-bold px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40">2x</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jar Progress & Jars Sealed -->
+      <div class="flex items-center gap-3 sm:gap-5">
+        <!-- Current Jar Fill Meter -->
+        <div class="flex flex-col min-w-[96px] sm:min-w-[130px]">
+          <div class="flex items-center justify-between text-[10px] sm:text-xs font-semibold text-cyan-200 mb-0.5">
+            <span>JAR #<span id="hud-jar-num">1</span></span>
+            <span class="font-mono-arcade text-[#2ef2b8]"><span id="hud-jar-count">0</span>/<span id="hud-jar-cap">4</span></span>
+          </div>
+          <div class="w-full h-2.5 sm:h-3 rounded-full bg-[#090714] border border-cyan-500/40 p-0.5 overflow-hidden">
+            <div id="hud-jar-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-300 transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Jars Sealed Counter -->
+        <div class="flex flex-col items-center px-2.5 py-1 rounded-xl bg-[#0b081c] border border-purple-500/30">
+          <span class="text-[9px] sm:text-[10px] uppercase tracking-wider text-purple-300">Sealed</span>
+          <div class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M8 3h8M9 3v3l-2 2v11a2 2 0 002 2h6a2 2 0 002-2V8l-2-2V3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="hud-sealed" class="font-mono-arcade text-sm sm:text-base font-bold text-white leading-none">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer + Mute Button -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="flex flex-col min-w-[84px] sm:min-w-[115px]">
+          <div class="flex items-center justify-between text-[10px] sm:text-xs font-semibold mb-0.5">
+            <span class="text-purple-200">TIME</span>
+            <span id="hud-time-text" class="font-mono-arcade font-bold text-white">60s</span>
+          </div>
+          <div class="w-full h-2.5 sm:h-3 rounded-full bg-[#090714] border border-purple-500/40 p-0.5 overflow-hidden">
+            <div id="hud-time-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 transition-all duration-150" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <!-- Sound Mute/Unmute Toggle -->
+        <button id="btn-mute" type="button" aria-label="Toggle Sound" title="Toggle Sound"
+          class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#23194d] hover:bg-[#2f2266] border border-purple-400/30 text-cyan-300 transition active:scale-95">
+          <!-- Sound On Icon -->
+          <svg id="icon-sound-on" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <!-- Sound Off Icon -->
+          <svg id="icon-sound-off" class="w-5 h-5 hidden text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="23" y1="9" x2="17" y2="15" stroke-linecap="round"/>
+            <line x1="17" y1="9" x2="23" y2="15" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==================== PLAYFIELD CANVAS AREA ==================== -->
+    <main id="canvas-container" class="relative flex-1 w-full min-h-0 overflow-hidden bg-[#0b081b]">
+      <canvas id="game-canvas" class="block w-full h-full"></canvas>
+
+      <!-- Subtle CRT Scanline Layer -->
+      <div class="scanlines absolute inset-0 z-10"></div>
+
+      <!-- ==================== START SCREEN OVERLAY ==================== -->
+      <div id="overlay-start" class="absolute inset-0 z-30 flex items-center justify-center p-3 sm:p-6 bg-[#090714]/80 backdrop-blur-sm overflow-y-auto no-scrollbar">
+        <div class="w-full max-w-xl rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#1a133d] to-[#110c29] border-2 border-[#43338a] p-4 sm:p-6 shadow-[0_0_40px_rgba(46,242,184,0.2)] text-center my-auto">
+          
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/30 text-[#2ef2b8] text-xs font-bold tracking-wider uppercase mb-2">
+            <span class="w-2 h-2 rounded-full bg-[#2ef2b8] animate-ping"></span>
+            Paranormal Containment Unit
+          </div>
+
+          <!-- Title -->
+          <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-white glow-cyan mb-1">
+            ECTO-CLAW
+          </h1>
+          <p class="text-sm sm:text-base font-semibold tracking-widest uppercase text-purple-300 glow-purple mb-4">
+            Ghost Hunter Arcade
+          </p>
+
+          <!-- Ghost Field Guide Grid -->
+          <div class="text-left mb-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-purple-300/90 mb-2 flex items-center justify-between">
+              <span>Ghost Field Guide</span>
+              <span class="text-[11px] font-normal text-cyan-300">Consecutive catches boost Combo!</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
+              <!-- Lumina Wisp -->
+              <div class="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl bg-[#0c091f]/90 border border-emerald-400/30">
+                <svg class="w-9 h-9 shrink-0 animate-float" viewBox="0 0 48 48">
+                  <defs>
+                    <radialGradient id="gWisp" cx="40%" cy="35%" r="60%">
+                      <stop offset="0%" stop-color="#a7f3d0"/>
+                      <stop offset="60%" stop-color="#2ef2b8"/>
+                      <stop offset="100%" stop-color="#059669"/>
+                    </radialGradient>
+                  </defs>
+                  <path d="M24 6C14 6 9 14 9 24c0 7 2 14 5 17 2 2 4-2 6-2s3 3 4 3 2-3 4-3 4 4 6 2c3-3 5-10 5-17 0-10-5-18-15-18z" fill="url(#gWisp)"/>
+                  <circle cx="19" cy="21" r="2.6" fill="#062c24"/>
+                  <circle cx="29" cy="21" r="2.6" fill="#062c24"/>
+                  <circle cx="19.8" cy="20.2" r="0.9" fill="#ffffff"/>
+                  <circle cx="29.8" cy="20.2" r="0.9" fill="#ffffff"/>
+                  <ellipse cx="24" cy="25.5" rx="2.2" ry="1.5" fill="#064e3b"/>
+                </svg>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-[#2ef2b8] truncate">Lumina Wisp</div>
+                  <div class="font-mono-arcade text-[11px] text-emerald-200">+100 PTS · +2s</div>
+                  <div class="text-[10px] text-slate-400 truncate">Gentle float</div>
+                </div>
+              </div>
+
+              <!-- Polter-Dash -->
+              <div class="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl bg-[#0c091f]/90 border border-fuchsia-400/30">
+                <svg class="w-9 h-9 shrink-0 animate-float" style="animation-delay: 0.3s" viewBox="0 0 48 48">
+                  <defs>
+                    <radialGradient id="gPolter" cx="40%" cy="35%" r="60%">
+                      <stop offset="0%" stop-color="#f5d0fe"/>
+                      <stop offset="55%" stop-color="#d946ef"/>
+                      <stop offset="100%" stop-color="#7e22ce"/>
+                    </radialGradient>
+                  </defs>
+                  <path d="M13 13L10 6l7 4M35 13l3-7-7 4" stroke="#e879f9" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M24 8C14 8 9 15 9 25c0 7 3 13 6 16 2 2 3-2 5-2s3 3 4 3 2-3 4-3 3 4 5 2c3-3 6-9 6-16 0-10-5-17-15-17z" fill="url(#gPolter)"/>
+                  <path d="M16 20l5 2M32 20l-5 2" stroke="#2e073f" stroke-width="2.2" stroke-linecap="round"/>
+                  <circle cx="19" cy="23" r="2.3" fill="#2e073f"/>
+                  <circle cx="29" cy="23" r="2.3" fill="#2e073f"/>
+                  <path d="M20 28q4 3 8 0" stroke="#2e073f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-fuchsia-300 truncate">Polter-Dash</div>
+                  <div class="font-mono-arcade text-[11px] text-fuchsia-200">+250 PTS · +3s</div>
+                  <div class="text-[10px] text-slate-400 truncate">Quick dash bursts</div>
+                </div>
+              </div>
+
+              <!-- Golden Phantom -->
+              <div class="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl bg-[#0c091f]/90 border border-amber-400/35">
+                <svg class="w-9 h-9 shrink-0 animate-float" style="animation-delay: 0.6s" viewBox="0 0 48 48">
+                  <defs>
+                    <radialGradient id="gGold" cx="40%" cy="35%" r="60%">
+                      <stop offset="0%" stop-color="#fef08a"/>
+                      <stop offset="55%" stop-color="#fbbf24"/>
+                      <stop offset="100%" stop-color="#b45309"/>
+                    </radialGradient>
+                  </defs>
+                  <path d="M17 10l3-5 4 4 4-4 3 5z" fill="#fde047"/>
+                  <path d="M24 10C14 10 10 17 10 26c0 7 2 13 5 15 2 2 3-2 5-2s3 3 4 3 2-3 4-3 3 4 5 2c3-2 5-8 5-15 0-9-4-16-14-16z" fill="url(#gGold)"/>
+                  <circle cx="19" cy="23" r="2.4" fill="#451a03"/>
+                  <circle cx="29" cy="23" r="2.4" fill="#451a03"/>
+                  <circle cx="24" cy="28" r="2" fill="#451a03"/>
+                </svg>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-amber-300 truncate">Golden Phantom</div>
+                  <div class="font-mono-arcade text-[11px] text-amber-200">+500 PTS · +5s</div>
+                  <div class="text-[10px] text-slate-400 truncate">Phases invisible!</div>
+                </div>
+              </div>
+
+              <!-- Cursed Skull -->
+              <div class="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl bg-[#0c091f]/90 border border-rose-500/40">
+                <svg class="w-9 h-9 shrink-0 animate-float" style="animation-delay: 0.9s" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="16" fill="#be123c" opacity="0.25"/>
+                  <path d="M24 9c-8 0-13 5-13 12 0 4 2 7 5 9v5a2 2 0 002 2h12a2 2 0 002-2v-5c3-2 5-5 5-9 0-7-5-12-13-12z" fill="#e2e8f0"/>
+                  <circle cx="19" cy="21" r="3.2" fill="#be123c"/>
+                  <circle cx="29" cy="21" r="3.2" fill="#be123c"/>
+                  <path d="M20 32v4M24 32v4M28 32v4" stroke="#1e1b4b" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-sm font-bold text-rose-400 truncate">Cursed Skull</div>
+                  <div class="font-mono-arcade text-[11px] text-rose-300">-5s · STUNS CLAW</div>
+                  <div class="text-[10px] text-slate-400 truncate">Avoid grabbing!</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls Hint Pill -->
+          <div class="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-xs text-purple-200/90 bg-[#0c091f] border border-purple-500/25 rounded-xl px-3 py-2 mb-4">
+            <span>Move: <strong class="text-cyan-300">◄ / ►</strong> or <strong class="text-cyan-300">A / D</strong></span>
+            <span class="text-purple-500">•</span>
+            <span>Drop Claw: <strong class="text-rose-400">SPACE / ▼ / S</strong> or Buttons</span>
+          </div>
+
+          <!-- Start CTA Button -->
+          <button id="btn-start" type="button"
+            class="arcade-btn btn-cyan w-full sm:w-auto px-10 py-3.5 rounded-2xl text-lg sm:text-xl font-extrabold tracking-wide uppercase">
+            START HUNT
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== GAME OVER OVERLAY ==================== -->
+      <div id="overlay-gameover" class="hidden absolute inset-0 z-30 flex items-center justify-center p-4 bg-[#090714]/85 backdrop-blur-md">
+        <div class="w-full max-w-md rounded-3xl bg-gradient-to-b from-[#1d1442] to-[#100b26] border-2 border-[#4c3999] p-6 shadow-[0_0_50px_rgba(192,132,252,0.28)] text-center">
+          <div class="inline-block px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-bold uppercase tracking-widest mb-2">
+            Shift Complete
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white glow-purple mb-1">TIME'S UP!</h2>
+          <p id="gameover-subtitle" class="text-xs sm:text-sm text-purple-300 mb-5">Great containment work, Ghost Hunter!</p>
+
+          <!-- Final Score Box -->
+          <div class="rounded-2xl bg-[#0a0718] border border-cyan-400/35 p-4 mb-4">
+            <div class="text-xs uppercase tracking-widest text-cyan-300/80 font-semibold">Final Score</div>
+            <div id="final-score" class="font-mono-arcade text-4xl sm:text-5xl font-extrabold text-[#2ef2b8] glow-cyan my-1">0</div>
+            <div id="final-best" class="font-mono-arcade text-xs text-amber-300">BEST: 0</div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-3 gap-2.5 mb-6">
+            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2.5">
+              <div class="text-[10px] uppercase text-purple-300">Ghosts</div>
+              <div id="final-ghosts" class="font-mono-arcade text-xl font-bold text-white">0</div>
+            </div>
+            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2.5">
+              <div class="text-[10px] uppercase text-purple-300">Jars Sealed</div>
+              <div id="final-jars" class="font-mono-arcade text-xl font-bold text-cyan-300">0</div>
+            </div>
+            <div class="rounded-xl bg-[#0e0a22] border border-purple-500/25 p-2.5">
+              <div class="text-[10px] uppercase text-purple-300">Max Combo</div>
+              <div id="final-combo" class="font-mono-arcade text-xl font-bold text-amber-300">1x</div>
+            </div>
+          </div>
+
+          <button id="btn-restart" type="button"
+            class="arcade-btn btn-purple w-full py-3.5 rounded-2xl text-lg sm:text-xl font-extrabold tracking-wide uppercase">
+            PLAY AGAIN
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ==================== BOTTOM ARCADE CONTROL DECK ==================== -->
+    <footer class="z-20 flex items-center justify-center gap-3 sm:gap-5 px-3 py-2.5 sm:px-6 sm:py-3.5 bg-gradient-to-t from-[#161033] to-[#1e1645] border-t-2 border-[#35286e] shrink-0">
+      <!-- LEFT Button -->
+      <button id="ctrl-left" type="button" aria-label="Move Claw Left"
+        class="arcade-btn btn-cyan flex-1 max-w-[155px] h-12 sm:h-14 rounded-2xl flex items-center justify-center gap-1.5 font-extrabold text-base sm:text-lg tracking-wider">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
+        <span>LEFT</span>
+      </button>
+
+      <!-- DROP CLAW Button -->
+      <button id="ctrl-drop" type="button" aria-label="Drop Claw"
+        class="arcade-btn btn-drop flex-[1.4] max-w-[230px] h-12 sm:h-14 rounded-2xl flex items-center justify-center gap-2 font-extrabold text-base sm:text-lg tracking-wider uppercase">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>DROP CLAW</span>
+      </button>
+
+      <!-- RIGHT Button -->
+      <button id="ctrl-right" type="button" aria-label="Move Claw Right"
+        class="arcade-btn btn-cyan flex-1 max-w-[155px] h-12 sm:h-14 rounded-2xl flex items-center justify-center gap-1.5 font-extrabold text-base sm:text-lg tracking-wider">
+        <span>RIGHT</span>
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+        </svg>
+      </button>
+    </footer>
+  </div>
+
+  <!-- ==================== GAME ENGINE & PROCEDURAL AUDIO ==================== -->
+  <script>
+    (() => {
+      'use strict';
+
+      /**
+       * =========================================================================
+       * 1. PROCEDURAL WEB AUDIO SYNTHESIZER (Zero External Assets)
+       * =========================================================================
+       */
+      class SoundEngine {
+        constructor() {
+          this.ctx = null;
+          this.muted = false;
+          this.lastMotorTime = 0;
+        }
+
+        init() {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+              this.ctx = new AudioCtx();
+            }
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+        }
+
+        toggleMute() {
+          this.muted = !this.muted;
+          return this.muted;
+        }
+
+        // Subtle mechanical stepper pulse while gantry moves
+        playMotorPulse() {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+          if (now - this.lastMotorTime < 0.085) return;
+          this.lastMotorTime = now;
+
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(115 + Math.random() * 18, now);
+          osc.frequency.exponentialRampToValueAtTime(85, now + 0.055);
+
+          gain.gain.setValueAtTime(0.035, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.065);
+        }
+
+        // Pneumatic drop whoosh
+        playDropWhoosh() {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(420, now);
+          osc.frequency.exponentialRampToValueAtTime(130, now + 0.28);
+
+          gain.gain.setValueAtTime(0.11, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.31);
+        }
+
+        // Mechanical claw pincers snapping shut
+        playClawSnap() {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(260, now);
+          osc.frequency.exponentialRampToValueAtTime(75, now + 0.09);
+
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.095);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        }
+
+        // Empty miss clunk
+        playMissClunk() {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(140, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 0.16);
+
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        }
+
+        // Spooky theremin warble on ghost capture
+        playGhostCatch(pitchBoost = 0) {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+
+          const osc = this.ctx.createOscillator();
+          const lfo = this.ctx.createOscillator();
+          const lfoGain = this.ctx.createGain();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          const baseFreq = 440 + pitchBoost * 55;
+          osc.frequency.setValueAtTime(baseFreq, now);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.45, now + 0.32);
+
+          lfo.type = 'sine';
+          lfo.frequency.setValueAtTime(16, now);
+          lfoGain.gain.setValueAtTime(24, now);
+
+          lfo.connect(lfoGain);
+          lfoGain.connect(osc.frequency);
+
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.14, now + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          lfo.start(now);
+          osc.stop(now + 0.37);
+          lfo.stop(now + 0.37);
+        }
+
+        // Glass clink + sparkle pop when ghost drops into containment jar
+        playJarClink() {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+
+          const freqs = [1567.98, 2349.32, 3135.96]; // G6, D7, G7 crystalline glass ping
+          freqs.forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + idx * 0.025);
+
+            gain.gain.setValueAtTime(0.09 / (idx + 1), now + idx * 0.025);
+            gain.gain.exponentialRampToValueAtTime(0.0008, now + idx * 0.025 + 0.28);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.025);
+            osc.stop(now + idx * 0.025 + 0.3);
+          });
+        }
+
+        // Celebratory arcade fanfare when jar quota is sealed
+        playJarSealed() {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+
+          notes.forEach((freq, i) => {
+            const start = now + i * 0.085;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, start);
+
+            gain.gain.setValueAtTime(0.001, start);
+            gain.gain.linearRampToValueAtTime(0.16, start + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(start);
+            osc.stop(start + 0.36);
+          });
+        }
+
+        // Electric zap when grabbing a Cursed Skull
+        playSkullZap() {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+
+          const osc = this.ctx.createOscillator();
+          const mod = this.ctx.createOscillator();
+          const modGain = this.ctx.createGain();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(190, now);
+          osc.frequency.linearRampToValueAtTime(65, now + 0.38);
+
+          mod.type = 'square';
+          mod.frequency.setValueAtTime(55, now);
+          modGain.gain.setValueAtTime(90, now);
+
+          mod.connect(modGain);
+          modGain.connect(osc.frequency);
+
+          gain.gain.setValueAtTime(0.16, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          mod.start(now);
+          osc.stop(now + 0.42);
+          mod.stop(now + 0.42);
+        }
+
+        // Low-time warning tick
+        playTick() {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.065);
+        }
+      }
+
+      const sound = new SoundEngine();
+
+      /**
+       * =========================================================================
+       * 2. DOM REFERENCES & INPUT STATE
+       * =========================================================================
+       */
+      const canvas = document.getElementById('game-canvas');
+      const ctx = canvas.getContext('2d');
+      const container = document.getElementById('canvas-container');
+
+      const hudScore = document.getElementById('hud-score');
+      const hudCombo = document.getElementById('hud-combo');
+      const hudJarNum = document.getElementById('hud-jar-num');
+      const hudJarCount = document.getElementById('hud-jar-count');
+      const hudJarCap = document.getElementById('hud-jar-cap');
+      const hudJarBar = document.getElementById('hud-jar-bar');
+      const hudSealed = document.getElementById('hud-sealed');
+      const hudTimeText = document.getElementById('hud-time-text');
+      const hudTimeBar = document.getElementById('hud-time-bar');
+
+      const overlayStart = document.getElementById('overlay-start');
+      const overlayGameover = document.getElementById('overlay-gameover');
+      const btnStart = document.getElementById('btn-start');
+      const btnRestart = document.getElementById('btn-restart');
+      const btnMute = document.getElementById('btn-mute');
+      const iconSoundOn = document.getElementById('icon-sound-on');
+      const iconSoundOff = document.getElementById('icon-sound-off');
+
+      const ctrlLeft = document.getElementById('ctrl-left');
+      const ctrlRight = document.getElementById('ctrl-right');
+      const ctrlDrop = document.getElementById('ctrl-drop');
+
+      const finalScoreEl = document.getElementById('final-score');
+      const finalBestEl = document.getElementById('final-best');
+      const finalGhostsEl = document.getElementById('final-ghosts');
+      const finalJarsEl = document.getElementById('final-jars');
+      const finalComboEl = document.getElementById('final-combo');
+
+      const input = {
+        left: false,
+        right: false
+      };
+
+      /**
+       * =========================================================================
+       * 3. GHOST ARCHETYPES & GAME CONFIGURATION
+       * =========================================================================
+       */
+      const GHOST_TYPES = {
+        wisp: {
+          id: 'wisp',
+          name: 'Lumina Wisp',
+          points: 100,
+          timeBonus: 2,
+          radius: 22,
+          baseSpeed: 75,
+          colorMain: '#2ef2b8',
+          colorLight: '#a7f3d0',
+          colorDark: '#059669',
+          eyeColor: '#052e25'
+        },
+        polter: {
+          id: 'polter',
+          name: 'Polter-Dash',
+          points: 250,
+          timeBonus: 3,
+          radius: 23,
+          baseSpeed: 105,
+          colorMain: '#d946ef',
+          colorLight: '#f5d0fe',
+          colorDark: '#7e22ce',
+          eyeColor: '#2e073f'
+        },
+        golden: {
+          id: 'golden',
+          name: 'Golden Phantom',
+          points: 500,
+          timeBonus: 5,
+          radius: 21,
+          baseSpeed: 135,
+          colorMain: '#fbbf24',
+          colorLight: '#fef08a',
+          colorDark: '#b45309',
+          eyeColor: '#451a03'
+        },
+        skull: {
+          id: 'skull',
+          name: 'Cursed Skull',
+          points: 0,
+          timeBonus: -5,
+          radius: 21,
+          baseSpeed: 88,
+          colorMain: '#f43f5e',
+          colorLight: '#fda4af',
+          colorDark: '#881337',
+          eyeColor: '#be123c'
+        }
+      };
+
+      // Responsive layout metrics recalculated on canvas resize
+      const layout = {
+        width: 800,
+        height: 560,
+        railY: 46,
+        floorY: 525,
+        dividerX: 195,
+        huntMinX: 235,
+        huntMaxX: 760,
+        jar: {
+          centerX: 100,
+          topY: 215,
+          bottomY: 495,
+          width: 118,
+          neckWidth: 74,
+          neckHeight: 28
+        }
+      };
+
+      // Persistent High Score helper
+      function getHighScore() {
+        try {
+          return parseInt(localStorage.getItem('ectoclaw_highscore') || '0', 10) || 0;
+        } catch (e) {
+          return 0;
+        }
+      }
+
+      function setHighScore(val) {
+        try {
+          localStorage.setItem('ectoclaw_highscore', String(val));
+        } catch (e) {
+          // Ignore storage restrictions
+        }
+      }
+
+      /**
+       * =========================================================================
+       * 4. CORE GAME STATE
+       * =========================================================================
+       */
+      const game = {
+        mode: 'START', // 'START' | 'PLAYING' | 'GAMEOVER'
+        score: 0,
+        highScore: getHighScore(),
+        combo: 1,
+        maxCombo: 1,
+        totalGhostsCaught: 0,
+        jarsSealed: 0,
+        jarNumber: 1,
+        jarCapacity: 4,
+        jarGhosts: [], // Ghosts currently trapped and floating inside the jar
+        jarSealedAnim: 0, // >0 while jar sealing cork celebration plays
+        jarSwapAnim: 0, // >0 while new jar slides up
+        timeRemaining: 60,
+        maxTime: 60,
+        lastWholeSecond: 60,
+        screenShake: 0,
+        ambientMotes: [],
+        particles: [],
+        floatingTexts: [],
+        ghosts: [],
+        spawnTimer: 0,
+        claw: {
+          state: 'IDLE', // 'IDLE' | 'DROPPING' | 'GRABBING' | 'REELING' | 'DELIVERING' | 'RELEASING' | 'RETURNING' | 'STUNNED'
+          x: 460,
+          vx: 0,
+          cableLength: 42,
+          minCable: 42,
+          maxCable: 440,
+          angle: 0,
+          angularVel: 0,
+          openRatio: 0.25, // 0 = closed, 1 = wide open
+          stateTimer: 0,
+          caughtGhost: null,
+          stunTimer: 0,
+          sparkTimer: 0
+        }
+      };
+
+      /**
+       * =========================================================================
+       * 5. RESIZE & RESPONSIVE GEOMETRY
+       * =========================================================================
+       */
+      function resizeCanvas() {
+        const rect = container.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        layout.width = Math.max(300, rect.width);
+        layout.height = Math.max(260, rect.height);
+
+        canvas.width = Math.floor(layout.width * dpr);
+        canvas.height = Math.floor(layout.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // Scale vertical landmarks cleanly
+        layout.railY = Math.max(36, Math.min(52, layout.height * 0.085));
+        layout.floorY = layout.height - Math.max(22, layout.height * 0.055);
+        game.claw.minCable = Math.max(34, layout.height * 0.075);
+        game.claw.maxCable = Math.max(160, layout.floorY - layout.railY - 42);
+
+        if (game.claw.state === 'IDLE') {
+          game.claw.cableLength = game.claw.minCable;
+        }
+
+        // Left Containment Jar Zone (~23% on desktop, ~27% on compact mobile)
+        const jarZoneRatio = layout.width < 540 ? 0.28 : 0.23;
+        layout.dividerX = Math.round(layout.width * jarZoneRatio);
+
+        const jarMaxW = Math.min(138, layout.dividerX * 0.78);
+        layout.jar.width = Math.max(66, jarMaxW);
+        layout.jar.neckWidth = layout.jar.width * 0.64;
+        layout.jar.neckHeight = Math.max(18, layout.height * 0.045);
+        layout.jar.centerX = Math.round(layout.dividerX * 0.5);
+        layout.jar.bottomY = layout.floorY - 12;
+        layout.jar.topY = Math.max(layout.railY + 115, layout.height * 0.38);
+
+        // Hunting Chamber Horizontal Bounds
+        layout.huntMinX = layout.dividerX + 34;
+        layout.huntMaxX = layout.width - 34;
+
+        // Clamp claw X within valid bounds
+        if (game.claw.state === 'IDLE' || game.claw.state === 'DROPPING') {
+          game.claw.x = Math.max(layout.huntMinX, Math.min(layout.huntMaxX, game.claw.x));
+        }
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+      if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(resizeCanvas).observe(container);
+      }
+
+      /**
+       * =========================================================================
+       * 6. ENTITY SPAWNING & PARTICLES
+       * =========================================================================
+       */
+      function initAmbientMotes() {
+        game.ambientMotes = [];
+        for (let i = 0; i < 28; i++) {
+          game.ambientMotes.push({
+            x: Math.random() * layout.width,
+            y: Math.random() * layout.height,
+            r: 1 + Math.random() * 2.2,
+            vy: -8 - Math.random() * 14,
+            vx: (Math.random() - 0.5) * 10,
+            alpha: 0.15 + Math.random() * 0.35,
+            hue: Math.random() > 0.4 ? '#2ef2b8' : '#c084fc'
+          });
+        }
+      }
+
+      function spawnParticles(x, y, color, count = 16, speed = 150) {
+        for (let i = 0; i < count; i++) {
+          const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+          const spd = speed * (0.4 + Math.random() * 0.75);
+          game.particles.push({
+            x,
+            y,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd - 20,
+            size: 2.5 + Math.random() * 3.8,
+            color,
+            life: 0.45 + Math.random() * 0.35,
+            maxLife: 0.8
+          });
+        }
+      }
+
+      function spawnFloatingText(x, y, text, color = '#2ef2b8', scale = 1) {
+        game.floatingTexts.push({
+          x,
+          y,
+          text,
+          color,
+          scale,
+          vy: -48,
+          life: 1.15,
+          maxLife: 1.15
+        });
+      }
+
+      function chooseGhostType() {
+        const difficulty = Math.min(1, (game.jarNumber - 1) * 0.15);
+        const roll = Math.random();
+        // ~18% Cursed Skull (scales slightly up to 24%)
+        if (roll < 0.17 + difficulty * 0.07) return GHOST_TYPES.skull;
+        // ~15% Golden Phantom
+        if (roll < 0.32 + difficulty * 0.08) return GHOST_TYPES.golden;
+        // ~30% Polter-Dash
+        if (roll < 0.62 + difficulty * 0.08) return GHOST_TYPES.polter;
+        // Remaining Lumina Wisp
+        return GHOST_TYPES.wisp;
+      }
+
+      function spawnGhost(forcedType = null) {
+        const type = forcedType || chooseGhostType();
+        const padX = 36;
+        const minX = layout.dividerX + padX;
+        const maxX = layout.width - padX;
+        const minY = layout.railY + 95;
+        const maxY = layout.floorY - 46;
+
+        if (maxX <= minX || maxY <= minY) return;
+
+        const dir = Math.random() < 0.5 ? 1 : -1;
+        const speedScale = 1 + (game.jarNumber - 1) * 0.06;
+
+        game.ghosts.push({
+          type,
+          x: minX + Math.random() * (maxX - minX),
+          y: minY + Math.random() * (maxY - minY),
+          baseY: minY + Math.random() * (maxY - minY),
+          vx: dir * type.baseSpeed * speedScale * (0.85 + Math.random() * 0.3),
+          bobPhase: Math.random() * Math.PI * 2,
+          bobAmp: type.id === 'wisp' ? 14 : 9,
+          bobFreq: type.id === 'wisp' ? 2.4 : 3.2,
+          dashTimer: 1.4 + Math.random() * 1.8,
+          isDashing: false,
+          phaseTimer: Math.random() * 4,
+          alpha: 1,
+          wiggle: 0,
+          caught: false
+        });
+      }
+
+      function populateInitialGhosts() {
+        game.ghosts = [];
+        const starterPool = [
+          GHOST_TYPES.wisp,
+          GHOST_TYPES.wisp,
+          GHOST_TYPES.polter,
+          GHOST_TYPES.golden,
+          GHOST_TYPES.skull,
+          GHOST_TYPES.wisp
+        ];
+        starterPool.forEach((t) => spawnGhost(t));
+      }
+
+      /**
+       * =========================================================================
+       * 7. GAME FLOW & HUD UPDATES
+       * =========================================================================
+       */
+      function updateHUD() {
+        hudScore.textContent = game.score.toLocaleString();
+
+        if (game.combo > 1) {
+          hudCombo.textContent = `${game.combo}x`;
+          hudCombo.classList.remove('hidden');
+        } else {
+          hudCombo.classList.add('hidden');
+        }
+
+        hudJarNum.textContent = game.jarNumber;
+        hudJarCount.textContent = game.jarGhosts.length;
+        hudJarCap.textContent = game.jarCapacity;
+
+        const fillPct = Math.min(100, (game.jarGhosts.length / game.jarCapacity) * 100);
+        hudJarBar.style.width = `${fillPct}%`;
+
+        hudSealed.textContent = game.jarsSealed;
+
+        const secs = Math.max(0, Math.ceil(game.timeRemaining));
+        hudTimeText.textContent = `${secs}s`;
+        const timePct = Math.max(0, Math.min(100, (game.timeRemaining / game.maxTime) * 100));
+        hudTimeBar.style.width = `${timePct}%`;
+
+        if (secs <= 10) {
+          hudTimeText.classList.add('text-rose-400');
+          hudTimeBar.className = 'h-full rounded-full bg-gradient-to-r from-rose-500 to-amber-400 transition-all duration-150';
+        } else {
+          hudTimeText.classList.remove('text-rose-400');
+          hudTimeBar.className = 'h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 transition-all duration-150';
+        }
+
+        // Disable Drop button while claw is busy
+        ctrlDrop.disabled = game.mode !== 'PLAYING' || game.claw.state !== 'IDLE';
+      }
+
+      function startNewGame() {
+        sound.init();
+        resizeCanvas();
+
+        game.mode = 'PLAYING';
+        game.score = 0;
+        game.combo = 1;
+        game.maxCombo = 1;
+        game.totalGhostsCaught = 0;
+        game.jarsSealed = 0;
+        game.jarNumber = 1;
+        game.jarCapacity = 4;
+        game.jarGhosts = [];
+        game.jarSealedAnim = 0;
+        game.jarSwapAnim = 0;
+        game.timeRemaining = 60;
+        game.maxTime = 60;
+        game.lastWholeSecond = 60;
+        game.screenShake = 0;
+        game.particles = [];
+        game.floatingTexts = [];
+
+        game.claw.state = 'IDLE';
+        game.claw.x = (layout.huntMinX + layout.huntMaxX) * 0.5;
+        game.claw.vx = 0;
+        game.claw.cableLength = game.claw.minCable;
+        game.claw.angle = 0;
+        game.claw.angularVel = 0;
+        game.claw.openRatio = 0.25;
+        game.claw.caughtGhost = null;
+        game.claw.stunTimer = 0;
+
+        populateInitialGhosts();
+        updateHUD();
+
+        overlayStart.classList.add('hidden');
+        overlayGameover.classList.add('hidden');
+      }
+
+      function triggerGameOver() {
+        game.mode = 'GAMEOVER';
+        input.left = false;
+        input.right = false;
+
+        if (game.score > game.highScore) {
+          game.highScore = game.score;
+          setHighScore(game.highScore);
+        }
+
+        finalScoreEl.textContent = game.score.toLocaleString();
+        finalBestEl.textContent = `BEST: ${game.highScore.toLocaleString()}`;
+        finalGhostsEl.textContent = game.totalGhostsCaught;
+        finalJarsEl.textContent = game.jarsSealed;
+        finalComboEl.textContent = `${game.maxCombo}x`;
+
+        updateHUD();
+        overlayGameover.classList.remove('hidden');
+      }
+
+      function triggerDropClaw() {
+        if (game.mode !== 'PLAYING') return;
+        if (game.claw.state !== 'IDLE') return;
+
+        sound.init();
+        sound.playDropWhoosh();
+        game.claw.state = 'DROPPING';
+        game.claw.vx = 0;
+        updateHUD();
+      }
+
+      /**
+       * =========================================================================
+       * 8. CLAW STATE MACHINE & PHYSICS UPDATE
+       * =========================================================================
+       */
+      function getClawTipPosition() {
+        const pivotX = game.claw.x;
+        const pivotY = layout.railY + 14;
+        const totalLen = game.claw.cableLength + 24;
+        const tipX = pivotX - Math.sin(game.claw.angle) * totalLen;
+        const tipY = pivotY + Math.cos(game.claw.angle) * totalLen;
+        return { x: tipX, y: tipY };
+      }
+
+      function updateClaw(dt) {
+        const claw = game.claw;
+        const moveSpeed = Math.max(240, (layout.huntMaxX - layout.huntMinX) * 0.56);
+
+        // Pendulum sway physics
+        const springK = 26;
+        const damping = 4.6;
+        const accelTorque = -claw.vx * 0.018;
+        const angularAccel = -springK * claw.angle - damping * claw.angularVel + accelTorque;
+        claw.angularVel += angularAccel * dt;
+        claw.angle += claw.angularVel * dt;
+        claw.angle = Math.max(-0.32, Math.min(0.32, claw.angle));
+
+        switch (claw.state) {
+          case 'IDLE': {
+            let dir = 0;
+            if (input.left) dir -= 1;
+            if (input.right) dir += 1;
+
+            const targetVx = dir * moveSpeed;
+            claw.vx += (targetVx - claw.vx) * Math.min(1, dt * 16);
+            claw.x += claw.vx * dt;
+
+            if (claw.x < layout.huntMinX) {
+              claw.x = layout.huntMinX;
+              claw.vx = 0;
+            } else if (claw.x > layout.huntMaxX) {
+              claw.x = layout.huntMaxX;
+              claw.vx = 0;
+            }
+
+            if (Math.abs(claw.vx) > 25) {
+              sound.playMotorPulse();
+            }
+
+            claw.openRatio += (0.28 - claw.openRatio) * Math.min(1, dt * 10);
+            break;
+          }
+
+          case 'DROPPING': {
+            const dropSpeed = Math.max(360, layout.height * 0.78);
+            claw.cableLength += dropSpeed * dt;
+            claw.openRatio += (1.0 - claw.openRatio) * Math.min(1, dt * 14);
+
+            const tip = getClawTipPosition();
+
+            // Check collision with active ghosts / hazards
+            for (let i = 0; i < game.ghosts.length; i++) {
+              const g = game.ghosts[i];
+              if (g.caught) continue;
+
+              // Golden Phantom cannot be grabbed while phased invisible
+              if (g.type.id === 'golden' && g.alpha < 0.45) {
+                continue;
+              }
+
+              const dx = tip.x - g.x;
+              const dy = tip.y - g.y;
+              const hitRadius = g.type.radius + 17;
+
+              if (dx * dx + dy * dy <= hitRadius * hitRadius) {
+                if (g.type.id === 'skull') {
+                  // Grabbed a Cursed Skull!
+                  sound.playSkullZap();
+                  game.screenShake = 0.42;
+                  game.combo = 1;
+                  game.timeRemaining = Math.max(0, game.timeRemaining - 5);
+                  spawnParticles(g.x, g.y, '#f43f5e', 24, 210);
+                  spawnFloatingText(g.x, g.y - 16, 'CURSED! -5s', '#fb7185', 1.15);
+                  game.ghosts.splice(i, 1);
+
+                  claw.state = 'STUNNED';
+                  claw.stunTimer = 0.65;
+                  claw.openRatio = 0.2;
+                  updateHUD();
+                  return;
+                } else {
+                  // Caught a Ghost!
+                  sound.playClawSnap();
+                  sound.playGhostCatch(game.combo - 1);
+                  g.caught = true;
+                  claw.caughtGhost = g;
+                  game.ghosts.splice(i, 1);
+
+                  spawnParticles(g.x, g.y, g.type.colorMain, 14, 130);
+                  claw.state = 'GRABBING';
+                  claw.stateTimer = 0.2;
+                  updateHUD();
+                  return;
+                }
+              }
+            }
+
+            // Reached chamber floor without catching anything
+            if (claw.cableLength >= claw.maxCable) {
+              claw.cableLength = claw.maxCable;
+              sound.playMissClunk();
+              game.combo = 1;
+              claw.state = 'GRABBING';
+              claw.stateTimer = 0.22;
+              updateHUD();
+            }
+            break;
+          }
+
+          case 'GRABBING': {
+            const targetOpen = claw.caughtGhost ? 0.42 : 0.08;
+            claw.openRatio += (targetOpen - claw.openRatio) * Math.min(1, dt * 18);
+            claw.stateTimer -= dt;
+            if (claw.stateTimer <= 0) {
+              claw.state = 'REELING';
+            }
+            break;
+          }
+
+          case 'REELING': {
+            const reelSpeed = claw.caughtGhost
+              ? Math.max(320, layout.height * 0.68)
+              : Math.max(410, layout.height * 0.85);
+            claw.cableLength -= reelSpeed * dt;
+
+            if (claw.cableLength <= claw.minCable) {
+              claw.cableLength = claw.minCable;
+              if (claw.caughtGhost) {
+                claw.state = 'DELIVERING';
+              } else {
+                claw.state = 'IDLE';
+                updateHUD();
+              }
+            }
+            break;
+          }
+
+          case 'DELIVERING': {
+            const targetX = layout.jar.centerX;
+            const diff = targetX - claw.x;
+            const deliverSpeed = Math.max(330, layout.width * 0.55);
+
+            if (Math.abs(diff) <= deliverSpeed * dt) {
+              claw.x = targetX;
+              claw.vx = 0;
+              claw.state = 'RELEASING';
+              claw.stateTimer = 0.22;
+            } else {
+              const step = Math.sign(diff) * deliverSpeed;
+              claw.vx = step;
+              claw.x += step * dt;
+              sound.playMotorPulse();
+            }
+            break;
+          }
+
+          case 'RELEASING': {
+            claw.openRatio += (1.0 - claw.openRatio) * Math.min(1, dt * 18);
+            claw.stateTimer -= dt;
+
+            if (claw.stateTimer <= 0 && claw.caughtGhost) {
+              depositGhostIntoJar(claw.caughtGhost);
+              claw.caughtGhost = null;
+              claw.state = 'RETURNING';
+            }
+            break;
+          }
+
+          case 'RETURNING': {
+            // Wait briefly if jar is currently sealing so player enjoys the effect
+            if (game.jarSealedAnim > 0.35) {
+              claw.vx = 0;
+              break;
+            }
+
+            const homeX = layout.huntMinX + Math.min(90, (layout.huntMaxX - layout.huntMinX) * 0.2);
+            const diff = homeX - claw.x;
+            const returnSpeed = Math.max(360, layout.width * 0.62);
+
+            claw.openRatio += (0.28 - claw.openRatio) * Math.min(1, dt * 10);
+
+            if (Math.abs(diff) <= returnSpeed * dt) {
+              claw.x = homeX;
+              claw.vx = 0;
+              claw.state = 'IDLE';
+              updateHUD();
+            } else {
+              const step = Math.sign(diff) * returnSpeed;
+              claw.vx = step;
+              claw.x += step * dt;
+              sound.playMotorPulse();
+            }
+            break;
+          }
+
+          case 'STUNNED': {
+            claw.stunTimer -= dt;
+            claw.sparkTimer -= dt;
+            if (claw.sparkTimer <= 0) {
+              claw.sparkTimer = 0.08;
+              const tip = getClawTipPosition();
+              spawnParticles(tip.x, tip.y, '#fb7185', 5, 95);
+            }
+
+            // Retract cable while stunned
+            const stunReel = Math.max(340, layout.height * 0.72);
+            claw.cableLength = Math.max(claw.minCable, claw.cableLength - stunReel * dt);
+
+            if (claw.stunTimer <= 0 && claw.cableLength <= claw.minCable) {
+              claw.state = 'IDLE';
+              updateHUD();
+            }
+            break;
+          }
+        }
+
+        // Update trapped-in-claw ghost wiggle
+        if (claw.caughtGhost) {
+          claw.caughtGhost.wiggle += dt * 18;
+        }
+      }
+
+      /**
+       * =========================================================================
+       * 9. CONTAINMENT JAR DEPOSIT & QUOTA SEALING
+       * =========================================================================
+       */
+      function depositGhostIntoJar(ghost) {
+        sound.playJarClink();
+
+        const pts = ghost.type.points * game.combo;
+        const bonusSec = ghost.type.timeBonus;
+
+        game.score += pts;
+        game.totalGhostsCaught += 1;
+        game.timeRemaining = Math.min(game.maxTime, game.timeRemaining + bonusSec);
+
+        // Visual feedback at jar mouth
+        const mouthX = layout.jar.centerX;
+        const mouthY = layout.jar.topY + 12;
+        spawnParticles(mouthX, mouthY, ghost.type.colorMain, 18, 135);
+        spawnParticles(mouthX, mouthY, '#ffffff', 8, 95);
+
+        const comboLabel = game.combo > 1 ? ` (${game.combo}x)` : '';
+        spawnFloatingText(mouthX + 18, mouthY - 12, `+${pts}${comboLabel}`, ghost.type.colorMain, 1.05);
+        spawnFloatingText(mouthX + 18, mouthY + 10, `+${bonusSec}s`, '#a7f3d0', 0.9);
+
+        // Increment combo for next capture
+        game.combo += 1;
+        if (game.combo > game.maxCombo) {
+          game.maxCombo = game.combo;
+        }
+
+        // Add ghost inside the glass containment jar physics simulation
+        const jar = layout.jar;
+        const innerPad = 18;
+        game.jarGhosts.push({
+          type: ghost.type,
+          x: jar.centerX + (Math.random() - 0.5) * (jar.width * 0.35),
+          y: jar.topY + jar.neckHeight + 18,
+          vx: (Math.random() - 0.5) * 70,
+          vy: 45 + Math.random() * 40,
+          scale: 0.54,
+          bobPhase: Math.random() * Math.PI * 2
+        });
+
+        // Check if Jar Quota is reached!
+        if (game.jarGhosts.length >= game.jarCapacity) {
+          sealCurrentJar();
+        }
+
+        updateHUD();
+      }
+
+      function sealCurrentJar() {
+        sound.playJarSealed();
+
+        const bonusPoints = 500;
+        const bonusTime = 6;
+
+        game.score += bonusPoints;
+        game.jarsSealed += 1;
+        game.timeRemaining = Math.min(game.maxTime, game.timeRemaining + bonusTime);
+        game.jarSealedAnim = 1.25;
+
+        const jx = layout.jar.centerX;
+        const jy = layout.jar.topY - 8;
+        spawnParticles(jx, jy, '#fbbf24', 28, 190);
+        spawnParticles(jx, jy, '#2ef2b8', 22, 160);
+        spawnFloatingText(jx + 35, jy - 24, 'JAR SEALED!', '#fbbf24', 1.25);
+        spawnFloatingText(jx + 35, jy, `+${bonusPoints} BONUS · +${bonusTime}s`, '#2ef2b8', 1.0);
+      }
+
+      function updateJarSimulation(dt) {
+        const jar = layout.jar;
+        const leftWall = jar.centerX - jar.width * 0.5 + 15;
+        const rightWall = jar.centerX + jar.width * 0.5 - 15;
+        const topWall = jar.topY + jar.neckHeight + 14;
+        const bottomWall = jar.bottomY - 16;
+
+        // Animate trapped ghosts floating inside the jar
+        for (let i = 0; i < game.jarGhosts.length; i++) {
+          const jg = game.jarGhosts[i];
+          jg.bobPhase += dt * 3.5;
+
+          // Gentle buoyant upward drift + swirl
+          jg.vy += Math.sin(jg.bobPhase) * 35 * dt - 12 * dt;
+          jg.vx += Math.cos(jg.bobPhase * 0.8) * 28 * dt;
+
+          jg.vx *= 0.985;
+          jg.vy *= 0.985;
+
+          jg.x += jg.vx * dt;
+          jg.y += jg.vy * dt;
+
+          if (jg.x < leftWall) {
+            jg.x = leftWall;
+            jg.vx = Math.abs(jg.vx) * 0.75 + 12;
+          } else if (jg.x > rightWall) {
+            jg.x = rightWall;
+            jg.vx = -Math.abs(jg.vx) * 0.75 - 12;
+          }
+
+          if (jg.y < topWall) {
+            jg.y = topWall;
+            jg.vy = Math.abs(jg.vy) * 0.75 + 10;
+          } else if (jg.y > bottomWall) {
+            jg.y = bottomWall;
+            jg.vy = -Math.abs(jg.vy) * 0.75 - 14;
+          }
+        }
+
+        // Handle Jar Sealing Celebration -> Fresh Jar Swap
+        if (game.jarSealedAnim > 0) {
+          game.jarSealedAnim -= dt;
+          if (game.jarSealedAnim <= 0) {
+            game.jarSealedAnim = 0;
+            game.jarGhosts = [];
+            game.jarNumber += 1;
+            game.jarCapacity = Math.min(8, 3 + game.jarNumber); // 4, 5, 6, 7, 8...
+            game.jarSwapAnim = 0.45;
+            updateHUD();
+          }
+        }
+
+        if (game.jarSwapAnim > 0) {
+          game.jarSwapAnim = Math.max(0, game.jarSwapAnim - dt);
+        }
+      }
+
+      /**
+       * =========================================================================
+       * 10. GHOST AI & WORLD UPDATE
+       * =========================================================================
+       */
+      function updateGhosts(dt) {
+        const minX = layout.dividerX + 30;
+        const maxX = layout.width - 30;
+        const minY = layout.railY + 86;
+        const maxY = layout.floorY - 40;
+
+        // Maintain healthy ghost population in chamber
+        const targetCount = Math.min(9, 6 + Math.floor((game.jarNumber - 1) * 0.6));
+        game.spawnTimer -= dt;
+        if (game.ghosts.length < targetCount && game.spawnTimer <= 0) {
+          spawnGhost();
+          game.spawnTimer = 0.75;
+        }
+
+        for (let i = 0; i < game.ghosts.length; i++) {
+          const g = game.ghosts[i];
+          g.bobPhase += dt * g.bobFreq;
+
+          // Polter-Dash periodic burst behavior
+          if (g.type.id === 'polter') {
+            g.dashTimer -= dt;
+            if (!g.isDashing && g.dashTimer <= 0) {
+              g.isDashing = true;
+              g.dashTimer = 0.42;
+              g.vx = Math.sign(g.vx || 1) * g.type.baseSpeed * 2.55;
+              spawnParticles(g.x, g.y, '#e879f9', 6, 70);
+            } else if (g.isDashing && g.dashTimer <= 0) {
+              g.isDashing = false;
+              g.dashTimer = 1.6 + Math.random() * 1.5;
+              g.vx = Math.sign(g.vx || 1) * g.type.baseSpeed;
+            }
+          }
+
+          // Golden Phantom phase visibility cycle
+          if (g.type.id === 'golden') {
+            g.phaseTimer += dt;
+            const cycle = g.phaseTimer % 4.2;
+            if (cycle > 2.7) {
+              // Phased semi-transparent state
+              g.alpha += (0.24 - g.alpha) * Math.min(1, dt * 8);
+            } else {
+              // Materialized solid state
+              g.alpha += (1.0 - g.alpha) * Math.min(1, dt * 8);
+            }
+          }
+
+          g.x += g.vx * dt;
+          g.y = g.baseY + Math.sin(g.bobPhase) * g.bobAmp;
+
+          // Bounce off hunting chamber walls
+          if (g.x < minX) {
+            g.x = minX;
+            g.vx = Math.abs(g.vx);
+          } else if (g.x > maxX) {
+            g.x = maxX;
+            g.vx = -Math.abs(g.vx);
+          }
+
+          g.y = Math.max(minY, Math.min(maxY, g.y));
+        }
+      }
+
+      function updateParticlesAndTexts(dt) {
+        // Ambient motes
+        for (let i = 0; i < game.ambientMotes.length; i++) {
+          const m = game.ambientMotes[i];
+          m.x += m.vx * dt;
+          m.y += m.vy * dt;
+          if (m.y < -10) {
+            m.y = layout.height + 10;
+            m.x = Math.random() * layout.width;
+          }
+          if (m.x < 0) m.x = layout.width;
+          if (m.x > layout.width) m.x = 0;
+        }
+
+        // Burst particles
+        for (let i = game.particles.length - 1; i >= 0; i--) {
+          const p = game.particles[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy += 180 * dt;
+          p.life -= dt;
+          if (p.life <= 0) {
+            game.particles.splice(i, 1);
+          }
+        }
+
+        // Floating score & status popups
+        for (let i = game.floatingTexts.length - 1; i >= 0; i--) {
+          const ft = game.floatingTexts[i];
+          ft.y += ft.vy * dt;
+          ft.vy *= 0.96;
+          ft.life -= dt;
+          if (ft.life <= 0) {
+            game.floatingTexts.splice(i, 1);
+          }
+        }
+      }
+
+      /**
+       * =========================================================================
+       * 11. CANVAS RENDERING ENGINE
+       * =========================================================================
+       */
+      function drawBackground() {
+        const w = layout.width;
+        const h = layout.height;
+
+        // Deep haunted indigo gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+        bgGrad.addColorStop(0, '#090717');
+        bgGrad.addColorStop(0.55, '#120d2b');
+        bgGrad.addColorStop(1, '#19113b');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Subtle gothic arched chamber windows in background
+        ctx.save();
+        ctx.strokeStyle = 'rgba(139, 92, 246, 0.09)';
+        ctx.lineWidth = 2;
+        const archCount = 3;
+        const huntW = w - layout.dividerX;
+        const archSpacing = huntW / archCount;
+        for (let i = 0; i < archCount; i++) {
+          const ax = layout.dividerX + archSpacing * (i + 0.5);
+          const aw = Math.min(110, archSpacing * 0.62);
+          const ay = layout.railY + 55;
+          const ah = layout.floorY - ay - 35;
+
+          ctx.beginPath();
+          ctx.arc(ax, ay + aw * 0.5, aw * 0.5, Math.PI, 0);
+          ctx.lineTo(ax + aw * 0.5, ay + ah);
+          ctx.lineTo(ax - aw * 0.5, ay + ah);
+          ctx.closePath();
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // Ambient ecto motes
+        for (let i = 0; i < game.ambientMotes.length; i++) {
+          const m = game.ambientMotes[i];
+          ctx.save();
+          ctx.globalAlpha = m.alpha;
+          ctx.fillStyle = m.hue;
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Containment Zone vs Hunting Chamber Floor & Barrier
+        const floorGrad = ctx.createLinearGradient(0, layout.floorY, 0, h);
+        floorGrad.addColorStop(0, '#22194d');
+        floorGrad.addColorStop(1, '#0d0921');
+        ctx.fillStyle = floorGrad;
+        ctx.fillRect(0, layout.floorY, w, h - layout.floorY);
+
+        // Glowing floor trim line
+        ctx.strokeStyle = '#3b2d7a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, layout.floorY);
+        ctx.lineTo(w, layout.floorY);
+        ctx.stroke();
+
+        // Energy containment barrier separating Jar Drop-Zone from Ghost Chamber
+        const divX = layout.dividerX;
+        const barrierTop = layout.jar.topY + 25;
+        const barrierGrad = ctx.createLinearGradient(0, barrierTop, 0, layout.floorY);
+        barrierGrad.addColorStop(0, 'rgba(46, 242, 184, 0.05)');
+        barrierGrad.addColorStop(0.5, 'rgba(46, 242, 184, 0.35)');
+        barrierGrad.addColorStop(1, 'rgba(46, 242, 184, 0.75)');
+
+        ctx.strokeStyle = barrierGrad;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(divX, barrierTop);
+        ctx.lineTo(divX, layout.floorY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Emitter pylon at base of divider
+        ctx.fillStyle = '#1e1645';
+        ctx.strokeStyle = '#2ef2b8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(divX - 8, layout.floorY - 14, 16, 14, 4);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      function drawGhostEntity(g, x, y, scale = 1, alpha = 1, isStunnedSkull = false) {
+        const t = g.type;
+        const r = t.radius * scale;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.globalAlpha = alpha;
+
+        // Outer spectral aura
+        const glow = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 1.55);
+        glow.addColorStop(0, t.colorMain + '55');
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 1.55, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (t.id === 'skull') {
+          // Cursed Skull Hazard
+          ctx.fillStyle = '#e2e8f0';
+          ctx.beginPath();
+          ctx.arc(0, -r * 0.12, r * 0.85, Math.PI * 0.85, Math.PI * 2.15);
+          ctx.lineTo(r * 0.55, r * 0.75);
+          ctx.lineTo(-r * 0.55, r * 0.75);
+          ctx.closePath();
+          ctx.fill();
+
+          // Glowing Crimson Eye Sockets
+          ctx.fillStyle = '#be123c';
+          ctx.beginPath();
+          ctx.arc(-r * 0.32, -r * 0.08, r * 0.24, 0, Math.PI * 2);
+          ctx.arc(r * 0.32, -r * 0.08, r * 0.24, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Eye pupils
+          ctx.fillStyle = '#fda4af';
+          ctx.beginPath();
+          ctx.arc(-r * 0.32, -r * 0.08, r * 0.09, 0, Math.PI * 2);
+          ctx.arc(r * 0.32, -r * 0.08, r * 0.09, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Teeth lines
+          ctx.strokeStyle = '#1e1b4b';
+          ctx.lineWidth = Math.max(1.5, 2 * scale);
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.25, r * 0.45);
+          ctx.lineTo(-r * 0.25, r * 0.75);
+          ctx.moveTo(0, r * 0.45);
+          ctx.lineTo(0, r * 0.75);
+          ctx.moveTo(r * 0.25, r * 0.45);
+          ctx.lineTo(r * 0.25, r * 0.75);
+          ctx.stroke();
+
+          ctx.restore();
+          return;
+        }
+
+        // Body gradient for cute ghosts
+        const bodyGrad = ctx.createRadialGradient(-r * 0.25, -r * 0.3, r * 0.1, 0, 0, r * 1.15);
+        bodyGrad.addColorStop(0, t.colorLight);
+        bodyGrad.addColorStop(0.55, t.colorMain);
+        bodyGrad.addColorStop(1, t.colorDark);
+
+        // Polter-Dash cute little horns
+        if (t.id === 'polter') {
+          ctx.fillStyle = t.colorLight;
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.65, -r * 0.55);
+          ctx.lineTo(-r * 0.9, -r * 1.05);
+          ctx.lineTo(-r * 0.3, -r * 0.8);
+          ctx.moveTo(r * 0.65, -r * 0.55);
+          ctx.lineTo(r * 0.9, -r * 1.05);
+          ctx.lineTo(r * 0.3, -r * 0.8);
+          ctx.fill();
+        }
+
+        // Golden Phantom floating crown
+        if (t.id === 'golden') {
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.45, -r * 0.95);
+          ctx.lineTo(-r * 0.25, -r * 1.3);
+          ctx.lineTo(0, -r * 1.05);
+          ctx.lineTo(r * 0.25, -r * 1.3);
+          ctx.lineTo(r * 0.45, -r * 0.95);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Ghost silhouette with wavy tail
+        const wave = Math.sin((g.bobPhase || 0) * 2) * r * 0.12;
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.arc(0, -r * 0.1, r * 0.9, Math.PI, 0);
+        ctx.lineTo(r * 0.9, r * 0.72);
+        ctx.quadraticCurveTo(r * 0.55, r * 0.95 + wave, r * 0.3, r * 0.72);
+        ctx.quadraticCurveTo(0, r * 0.98 - wave, -r * 0.3, r * 0.72);
+        ctx.quadraticCurveTo(-r * 0.55, r * 0.95 + wave, -r * 0.9, r * 0.72);
+        ctx.closePath();
+        ctx.fill();
+
+        // Dashed outline when Golden Phantom is phased semi-transparent
+        if (t.id === 'golden' && alpha < 0.5) {
+          ctx.strokeStyle = '#fef08a';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Cute Eyes & Expression
+        const lookDir = Math.sign(g.vx || 1) * r * 0.1;
+        ctx.fillStyle = t.eyeColor;
+
+        if (g.caught) {
+          // Cute > < squint eyes when caught in claw!
+          ctx.strokeStyle = t.eyeColor;
+          ctx.lineWidth = Math.max(2, 2.5 * scale);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.45, -r * 0.22);
+          ctx.lineTo(-r * 0.22, -r * 0.1);
+          ctx.lineTo(-r * 0.45, r * 0.02);
+
+          ctx.moveTo(r * 0.45, -r * 0.22);
+          ctx.lineTo(r * 0.22, -r * 0.1);
+          ctx.lineTo(r * 0.45, r * 0.02);
+          ctx.stroke();
+
+          // Little 'O' surprised mouth
+          ctx.beginPath();
+          ctx.arc(0, r * 0.22, r * 0.16, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Normal cute eyes
+          ctx.beginPath();
+          ctx.arc(-r * 0.32 + lookDir, -r * 0.12, r * 0.16, 0, Math.PI * 2);
+          ctx.arc(r * 0.32 + lookDir, -r * 0.12, r * 0.16, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Eye highlights
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(-r * 0.27 + lookDir, -r * 0.17, r * 0.06, 0, Math.PI * 2);
+          ctx.arc(r * 0.37 + lookDir, -r * 0.17, r * 0.06, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Cute mouth
+          ctx.fillStyle = t.eyeColor;
+          ctx.beginPath();
+          ctx.ellipse(lookDir, r * 0.18, r * 0.14, r * 0.1, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      function drawContainmentJar() {
+        const jar = layout.jar;
+        const swapOffsetY = game.jarSwapAnim > 0 ? Math.sin((game.jarSwapAnim / 0.45) * Math.PI * 0.5) * 90 : 0;
+
+        ctx.save();
+        ctx.translate(0, swapOffsetY);
+
+        const left = jar.centerX - jar.width * 0.5;
+        const right = jar.centerX + jar.width * 0.5;
+        const bodyTop = jar.topY + jar.neckHeight;
+        const bodyBottom = jar.bottomY;
+        const bodyH = bodyBottom - bodyTop;
+
+        // Glowing Rune Pedestal Base
+        const baseGrad = ctx.createLinearGradient(left - 8, bodyBottom - 4, right + 8, bodyBottom + 14);
+        baseGrad.addColorStop(0, '#1e1645');
+        baseGrad.addColorStop(0.5, '#3b2a82');
+        baseGrad.addColorStop(1, '#1e1645');
+        ctx.fillStyle = baseGrad;
+        ctx.strokeStyle = '#2ef2b8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(left - 8, bodyBottom - 4, jar.width + 16, 16, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Pedestal Rune Glow
+        const runeGlow = ctx.createRadialGradient(jar.centerX, bodyBottom, 4, jar.centerX, bodyBottom - 20, jar.width * 0.75);
+        runeGlow.addColorStop(0, 'rgba(46, 242, 184, 0.32)');
+        runeGlow.addColorStop(1, 'rgba(46, 242, 184, 0)');
+        ctx.fillStyle = runeGlow;
+        ctx.beginPath();
+        ctx.arc(jar.centerX, bodyBottom - 10, jar.width * 0.75, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Glass Jar Interior Background
+        const glassBg = ctx.createLinearGradient(left, bodyTop, right, bodyBottom);
+        glassBg.addColorStop(0, 'rgba(46, 242, 184, 0.14)');
+        glassBg.addColorStop(0.5, 'rgba(56, 189, 248, 0.06)');
+        glassBg.addColorStop(1, 'rgba(46, 242, 184, 0.18)');
+        ctx.fillStyle = glassBg;
+
+        ctx.beginPath();
+        ctx.roundRect(left, bodyTop, jar.width, bodyH, 18);
+        ctx.fill();
+
+        // Draw all caught ghosts floating happily inside the glass jar!
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(left + 3, bodyTop + 3, jar.width - 6, bodyH - 6, 15);
+        ctx.clip();
+
+        for (let i = 0; i < game.jarGhosts.length; i++) {
+          const jg = game.jarGhosts[i];
+          drawGhostEntity(jg, jg.x, jg.y, jg.scale, 0.95);
+        }
+        ctx.restore();
+
+        // Outer Glass Rim & Funnel Neck
+        ctx.strokeStyle = game.jarSealedAnim > 0 ? '#fbbf24' : 'rgba(165, 243, 252, 0.78)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(left, bodyTop, jar.width, bodyH, 18);
+        ctx.stroke();
+
+        // Funnel Neck Collar
+        const neckLeft = jar.centerX - jar.neckWidth * 0.5;
+        ctx.fillStyle = 'rgba(165, 243, 252, 0.18)';
+        ctx.strokeStyle = 'rgba(165, 243, 252, 0.85)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(neckLeft, jar.topY, jar.neckWidth, jar.neckHeight + 4, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Top Glass Lip Ring
+        ctx.fillStyle = 'rgba(207, 250, 254, 0.35)';
+        ctx.beginPath();
+        ctx.roundRect(neckLeft - 5, jar.topY - 3, jar.neckWidth + 10, 8, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Specular Glass Reflection Streak
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(left + 11, bodyTop + 16);
+        ctx.lineTo(left + 11, bodyBottom - 18);
+        ctx.stroke();
+
+        // Jar Quota Indicator Dots on Glass
+        const dotCount = game.jarCapacity;
+        const filledCount = game.jarGhosts.length;
+        const dotSpacing = Math.min(14, (jar.width - 24) / Math.max(1, dotCount - 1));
+        const startDotX = jar.centerX - ((dotCount - 1) * dotSpacing) * 0.5;
+        for (let i = 0; i < dotCount; i++) {
+          ctx.fillStyle = i < filledCount ? '#2ef2b8' : 'rgba(255, 255, 255, 0.2)';
+          ctx.beginPath();
+          ctx.arc(startDotX + i * dotSpacing, bodyBottom - 11, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Sealing Cork / Energy Lid when Jar Quota is Completed
+        if (game.jarSealedAnim > 0) {
+          const lidW = jar.neckWidth + 8;
+          const lidH = 16;
+          const lidX = jar.centerX - lidW * 0.5;
+          const lidY = jar.topY - 12;
+
+          ctx.fillStyle = '#fbbf24';
+          ctx.strokeStyle = '#fef08a';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(lidX, lidY, lidW, lidH, 5);
+          ctx.fill();
+          ctx.stroke();
+        }
+
+        // Subtle Drop Zone Label above Jar
+        ctx.fillStyle = 'rgba(165, 243, 252, 0.7)';
+        ctx.font = '700 10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CONTAINMENT', jar.centerX, jar.topY - 22);
+
+        ctx.restore();
+      }
+
+      function drawClawAssembly() {
+        const claw = game.claw;
+        const railY = layout.railY;
+
+        // Top Horizontal Gantry Rail spanning entire cabinet
+        const railGrad = ctx.createLinearGradient(0, railY - 7, 0, railY + 7);
+        railGrad.addColorStop(0, '#475569');
+        railGrad.addColorStop(0.5, '#94a3b8');
+        railGrad.addColorStop(1, '#1e293b');
+        ctx.fillStyle = railGrad;
+        ctx.fillRect(14, railY - 6, layout.width - 28, 12);
+
+        // Rail Neon Accent Strip
+        ctx.fillStyle = '#2ef2b8';
+        ctx.fillRect(14, railY - 1, layout.width - 28, 2);
+
+        // Rail End Bumpers
+        ctx.fillStyle = '#334155';
+        ctx.beginPath();
+        ctx.roundRect(10, railY - 11, 12, 22, 4);
+        ctx.roundRect(layout.width - 22, railY - 11, 12, 22, 4);
+        ctx.fill();
+
+        // Moving Gantry Carriage
+        ctx.save();
+        ctx.translate(claw.x, railY);
+
+        // Carriage Body
+        ctx.fillStyle = '#1e1b4b';
+        ctx.strokeStyle = claw.state === 'STUNNED' ? '#f43f5e' : '#38bdf8';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(-24, -14, 48, 28, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // Carriage Wheels
+        ctx.fillStyle = '#cbd5e1';
+        ctx.beginPath();
+        ctx.arc(-13, 0, 4.5, 0, Math.PI * 2);
+        ctx.arc(13, 0, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Rotating Pendulum Cable + Claw Head
+        ctx.translate(0, 14);
+        ctx.rotate(claw.angle);
+
+        // Steel/Energy Winch Cable
+        ctx.strokeStyle = claw.state === 'STUNNED' ? '#fb7185' : '#cbd5e1';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, claw.cableLength);
+        ctx.stroke();
+
+        // Cable energy pulse highlight
+        ctx.strokeStyle = claw.state === 'STUNNED' ? '#f43f5e' : '#2ef2b8';
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, claw.cableLength);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Move to Claw Hub at end of cable
+        ctx.translate(0, claw.cableLength);
+
+        // Draw Caught Ghost nestled inside pincers!
+        if (claw.caughtGhost) {
+          const wigX = Math.sin(claw.caughtGhost.wiggle) * 3;
+          drawGhostEntity(claw.caughtGhost, wigX, 24, 0.95, 1);
+        }
+
+        // Articulated Left & Right Pincer Arms
+        const openAngle = 0.18 + claw.openRatio * 0.68;
+
+        [-1, 1].forEach((side) => {
+          ctx.save();
+          ctx.translate(side * 9, 6);
+          ctx.rotate(side * -openAngle);
+
+          // Upper arm segment
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 5;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(side * 15, 16);
+          ctx.lineTo(side * 4, 31);
+          ctx.stroke();
+
+          // Inner neon claw edge
+          ctx.strokeStyle = claw.state === 'STUNNED' ? '#f43f5e' : '#2ef2b8';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(side * 12, 16);
+          ctx.lineTo(side * 3, 29);
+          ctx.stroke();
+
+          // Joint rivet
+          ctx.fillStyle = '#e2e8f0';
+          ctx.beginPath();
+          ctx.arc(side * 15, 16, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        });
+
+        // Central Mechanical Claw Hub
+        ctx.fillStyle = '#334155';
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-14, -6, 28, 15, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Glowing Ecto-Core on Hub
+        ctx.fillStyle = claw.state === 'STUNNED' ? '#f43f5e' : '#2ef2b8';
+        ctx.beginPath();
+        ctx.arc(0, 1.5, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawParticlesAndPopups() {
+        // Particles
+        for (let i = 0; i < game.particles.length; i++) {
+          const p = game.particles[i];
+          const alpha = Math.max(0, p.life / p.maxLife);
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Floating Score / Bonus Popups
+        for (let i = 0; i < game.floatingTexts.length; i++) {
+          const ft = game.floatingTexts[i];
+          const alpha = Math.min(1, (ft.life / ft.maxLife) * 1.4);
+          const fontSize = Math.round(16 * ft.scale);
+
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.font = `800 ${fontSize}px "Fredoka", sans-serif`;
+          ctx.textAlign = 'center';
+
+          // Crisp dark outline for high legibility
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = '#090714';
+          ctx.strokeText(ft.text, ft.x, ft.y);
+
+          ctx.fillStyle = ft.color;
+          ctx.fillText(ft.text, ft.x, ft.y);
+          ctx.restore();
+        }
+      }
+
+      function render() {
+        ctx.save();
+
+        // Screen shake on Cursed Skull shock
+        if (game.screenShake > 0) {
+          const mag = game.screenShake * 14;
+          ctx.translate((Math.random() - 0.5) * mag, (Math.random() - 0.5) * mag);
+        }
+
+        drawBackground();
+        drawContainmentJar();
+
+        // Draw active floating ghosts in hunting chamber
+        for (let i = 0; i < game.ghosts.length; i++) {
+          const g = game.ghosts[i];
+          drawGhostEntity(g, g.x, g.y, 1, g.alpha);
+        }
+
+        drawClawAssembly();
+        drawParticlesAndPopups();
+
+        ctx.restore();
+      }
+
+      /**
+       * =========================================================================
+       * 12. MAIN GAME LOOP
+       * =========================================================================
+       */
+      let lastTimestamp = 0;
+
+      function gameLoop(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
+        lastTimestamp = timestamp;
+
+        if (game.screenShake > 0) {
+          game.screenShake = Math.max(0, game.screenShake - dt);
+        }
+
+        if (game.mode === 'PLAYING') {
+          // Countdown Timer
+          game.timeRemaining -= dt;
+          const wholeSec = Math.ceil(game.timeRemaining);
+          if (wholeSec < game.lastWholeSecond) {
+            game.lastWholeSecond = wholeSec;
+            if (wholeSec > 0 && wholeSec <= 10) {
+              sound.playTick();
+            }
+          }
+
+          if (game.timeRemaining <= 0) {
+            game.timeRemaining = 0;
+            updateHUD();
+            triggerGameOver();
+          } else {
+            updateClaw(dt);
+            updateGhosts(dt);
+            updateJarSimulation(dt);
+            updateParticlesAndTexts(dt);
+            updateHUD();
+          }
+        } else {
+          // Keep background ghosts gently floating during Start / Game Over screens
+          updateGhosts(dt * 0.65);
+          updateJarSimulation(dt);
+          updateParticlesAndTexts(dt);
+        }
+
+        render();
+        requestAnimationFrame(gameLoop);
+      }
+
+      /**
+       * =========================================================================
+       * 13. KEYBOARD, POINTER & TOUCH CONTROLS
+       * =========================================================================
+       */
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          input.left = true;
+          ctrlLeft.classList.add('is-pressed');
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          input.right = true;
+          ctrlRight.classList.add('is-pressed');
+        } else if (e.key === ' ' || e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+          if (game.mode === 'PLAYING') {
+            e.preventDefault();
+            ctrlDrop.classList.add('is-pressed');
+            triggerDropClaw();
+          }
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          input.left = false;
+          ctrlLeft.classList.remove('is-pressed');
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          input.right = false;
+          ctrlRight.classList.remove('is-pressed');
+        } else if (e.key === ' ' || e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+          ctrlDrop.classList.remove('is-pressed');
+        }
+      });
+
+      // Helper for holdable Left/Right arcade buttons across mouse & touch
+      function bindHoldButton(btn, dirKey) {
+        const press = (e) => {
+          e.preventDefault();
+          sound.init();
+          input[dirKey] = true;
+          btn.classList.add('is-pressed');
+        };
+        const release = (e) => {
+          if (e) e.preventDefault();
+          input[dirKey] = false;
+          btn.classList.remove('is-pressed');
+        };
+
+        btn.addEventListener('pointerdown', press);
+        btn.addEventListener('pointerup', release);
+        btn.addEventListener('pointerleave', release);
+        btn.addEventListener('pointercancel', release);
+      }
+
+      bindHoldButton(ctrlLeft, 'left');
+      bindHoldButton(ctrlRight, 'right');
+
+      ctrlDrop.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        triggerDropClaw();
+      });
+
+      // Tapping directly inside the hunting chamber also drops the claw for extra convenience
+      canvas.addEventListener('pointerdown', (e) => {
+        if (game.mode !== 'PLAYING') return;
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        if (clickX > layout.dividerX && game.claw.state === 'IDLE') {
+          triggerDropClaw();
+        }
+      });
+
+      // Start, Restart & Mute Buttons
+      btnStart.addEventListener('click', startNewGame);
+      btnRestart.addEventListener('click', startNewGame);
+
+      btnMute.addEventListener('click', () => {
+        sound.init();
+        const isMuted = sound.toggleMute();
+        iconSoundOn.classList.toggle('hidden', isMuted);
+        iconSoundOff.classList.toggle('hidden', !isMuted);
+      });
+
+      /**
+       * =========================================================================
+       * 14. INITIALIZE ON WINDOW LOAD
+       * =========================================================================
+       */
+      window.onload = function () {
+        resizeCanvas();
+        initAmbientMotes();
+        populateInitialGhosts();
+        updateHUD();
+        requestAnimationFrame(gameLoop);
+      };
+    })();
+  </script>
+</body>
+</html>
